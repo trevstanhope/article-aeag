@@ -1,4 +1,5 @@
 #!/bin/sh
+rm *~
 rm *.dvi
 rm *.aux
 rm *.log

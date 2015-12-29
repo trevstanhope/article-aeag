@@ -1,30 +1,41 @@
 % --- Header --- %
 \documentclass[review]{elsarticle}
-%\usepackage{authblk}
-%\usepackage[utf8]{inputenc}
-%\usepackage[english]{babel}
-%\usepackage[style=alphabetic]{biblatex}
-%\addbibresource{references.bib} % include citations/references
-%\usepackage{listings}
-%\usepackage{multirow}
-%\usepackage{geometry}
-%\usepackage{gensymb}
-%\usepackage{booktabs}
-%\usepackage{mathtools} 
-%\usepackage{lipsum}
-%\usepackage{color}
-%\usepackage{graphicx}
-%\usepackage{ragged2e}
-%\usepackage{pgfplots}
-%\graphicspath{figures/}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{geometry}
+\usepackage{gensymb}
+\usepackage{booktabs}
+\usepackage{mathtools} 
+\usepackage{lipsum}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{ragged2e}
+\usepackage{pgfplots}
+\graphicspath{ {figures/} }
 
-% --- Front --- %
+% --- BEGIN Document --- %
 \begin{document}
-\title{Applications of computer-vision for agricultural implement feedback and control}
+
+% --- BEGIN Front Matter --- %
+\begin{frontmatter}
+\title{A system for integrating computer-vision guidance with inter-row cultivator
+  implement feedback}
+\author[rvt]{Trevor Stanhope}
+\ead{trevor.stanhope@mail.mcgill.ca}
+\author[rvt]{Viacheslav Adamchuk}
+\ead{viacheslav.adamchuk@mail.mcgill.ca}
+\author[els]{Jofroi Desperrier-Roux}
+\ead{jofroi-desperrier@agrifusion.ca}
+
+\address[rvt]{McGill University, 21111 Lakeshore Road,
+  Sainte-Anne-de-Bellevue, Quebec, Canada}
+\address[els]{Agri-Fusion 2000, Inc., 481 Chemine Saint Philippe,
+  Saint-Polycarpe, Quebec, Canada}
 
 \begin{abstract}
 Management of organic row crops requires frequent in-field
-operations. Depending on the extent of soil conservation practices, 
+operations. Depending on the degree of soil conservation practices, 
 weed control necessitates tillage operations. Strip-tillage and
 cultivator implements require precise guidance systems to
 assure proper positioning of the working tools. Legacy systems have
@@ -33,19 +44,28 @@ systems perform poorly during the earliest stages of crop growth.
 Modern techniques based on RTK GPS are available commercially but are
 prohibitively expensive for small-scale operations.
 Therefore, the objective of this study was to develop a low-cost CCD 
-camera system which is capable of supplementing the mechanical row detection during inter-row cultivation.
+camera system which is capable of supplementing the mechanical row
+detection during inter-row cultivation.
 A computer-vision guidance system was developed for the Intel Atom 
 architecture to interface with an electro-hydraulic steering hitch system.
 Two redundant CCD cameras were mounted to the cultivator toolbar
-in-line with crop rows to obtain a video stream of the plants passing beneath the implement.
-The OpenCV platform was used to develop an algorithm for identifying
-the lateral offset of the plant rows and adjust the hydraulic steering
-accordingly via PID control. The computer-vision guidance system was
-tested successfully without GPS RTK assistance at travel speeds of 6,
-8, 10, and 12 km/h in corn and soybean fields under varying ambient
-light and crop conditions.
+in-line with crop rows to obtain a video stream of the plants passing
+beneath the implement. The OpenCV platform was used to develop an
+algorithm for identifying the lateral offset of the plant rows and
+adjust the hydraulic steering accordingly via PID control. The
+computer-vision guidance system was tested successfully without GPS
+RTK assistance at travel speeds of 6, 8, 10, and 12 km/h in corn and
+soybean fields under varying ambient light and crop conditions.
 \end{abstract}
 
+\begin{keyword}
+\texttt{Computer-vision, inter-row cultivation}
+\end{keyword}
+
+\end{frontmatter}
+% --- END Front Matter --- %
+
+% --- BEGIN Introduction --- %
 \section{Introduction}
 Unlike conventional farming where herbicide application is the primary
 method for weed prevention, organic farmers must use tillage
@@ -83,7 +103,9 @@ electro-hydraulic implement guidance systems.  To be considered
 effective, the system should be capable of 4 cm precision 95 percent of the 
 time for travel speeds up to 12 km/h and for crops up to 20 cm in
 height.
+% --- END Introduction --- %
 
+% --- BEGIN Literature Review --- %
 \section{Literature Review}
 Demand for high precision tractor control has produced significant
 research interest over the past two decades. Studies by Hague et
@@ -98,11 +120,10 @@ Several different computer-vision methodologies have been proposed for
 detecting the offset of the crop row such as stereo-vision, distribution
 of crop foliage, Hough transform, and band-pass analysis.
 
-In order to identify the location of the crop row, t
-
-In order to identify the location of the crop row, the distribution of
-plant foliage within the captured images must be determined, a process
-known as segmentation. During this process, varying ambient light
+In order to identify the location of the crop row, the position of
+plant foliage within the captured images must be determined. This
+process can be classified into two categories: segmentation or
+non-segmentation. During either of these processes, varying ambient light
 conditions is one of the major limiting factors for successfully
 implementing computer-vision guidance for weed control. Variations in
 the ambient color temperature occur naturally with changes in weather
@@ -250,7 +271,9 @@ disc, $\alpha$ is the pitch of the
 disc, $\beta$ is the roll of the disc, $\rho$ is the distance from
 the axis of rotation of the disc to the given point of the working surface.
 \end{flushleft}
+% --- END Literature Review --- %
 
+% --- BEGIN Methodology --- %
 \section{Methodology}
 For field evaluation, a twelve row Hiniker cultivator equipped with a
 Sukup Auto-Guidance system mounted to a Fendt Vario 850 was used
@@ -323,9 +346,9 @@ simplify band-pass filtering operations (Equations \ref{eq:rgb2h} to \ref{eq:rgb
 \begin{equation}
   H_{i,j} =
   \begin{cases}
-    60 * \frac{G-B}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})}  & \quad \text{if } V = R \\
-    120 + 60 * \frac{B-R}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})}  & \quad \text{if } V = G \\
-    240 + 60 * \frac{R-G}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})}  & \quad \text{if } V = B \\
+    60 * \frac{G-B}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})} & \quad \text{if } V = R \\
+    120 + 60 * \frac{B-R}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})} & \quad \text{if } V = G \\
+    240 + 60 * \frac{R-G}{V_{i,j}-min(R_{i,j},G_{i,j},B_{i,j})} & \quad \text{if } V = B \\
   \end{cases}
   \label{eq:rgb2h}
 \end{equation}
@@ -637,7 +660,9 @@ reliability of the two systems at differing speeds of operation,
 trials were conducted at four approximate travel speeds: 6, 8, 10, and
 12 km/h. The travel speed of the tractor was set via the automatic
 speed controller of the vehicle.
+% --- END Methodology --- %
 
+% --- BEGIN Results --- %
 \section{Results}
 \begin{table}[h]
   \centering
@@ -649,12 +674,13 @@ speed controller of the vehicle.
       \multirow{2}[10]{*} & \multicolumn{4}{c}{RMSE (cm)} &
       \multicolumn{4}{c}{95$^{th}$ Percentile (cm)} \\
       \cmidrule(1r){2-5} \cmidrule(1r){6-9}  
-      & $\le$10 cm & 10-15 cm & 15-20 cm & $\ge$20 cm & $\le$10 cm & 10-15 cm & 15-20 cm & $\ge$20 cm \\
+      & $\le$ soy (<15 cm) & soy (~15 cm) & soy (>15 cm) & $\ge$ corn (>15 cm) & $\le$10 cm & 10-15 cm & 15-20 cm & $\ge$20 cm \\
       \midrule
       Computer-vision & 0.50 $\pm$ 0.1 & 19.36 $\pm$ 0.1 & 63.69 $\pm$ 0.1 & 65.67 $\pm$ 0.1 & 38.86 $\pm$ 0.1 & 38.9 $\pm$ 0.1 & 145.55 $\pm$ 0.1 & 143.69 $\pm$ 0.1 \\
       Guiding rods & 21.33 $\pm$ 0.1 & 20.92 $\pm$ 0.1 & 66.33 $\pm$ 0.1 & 66.15 $\pm$ 0.1 & 6.53 $\pm$ 0.1 & 6.00 $\pm$ 0.1 & 3.84 $\pm$ 0.1 & 3.50 $\pm$ 0.1 \\
-      \bottomrule  
-    \end{tabular}}
+      \bottomrule
+    \end{tabular}
+  }
   \label{table:travel_speed}
 \end{table}
 
@@ -675,7 +701,9 @@ speed controller of the vehicle.
     \end{tabular}}
  \label{table:travel_speed}
 \end{table}
+% --- END Results --- %
 
+% --- BEGIN Discussion --- %
 \section{Discussion}
 With respect to RMSE, the two systems performed comparatively, with an
 average RMSE of less than 3.5 cm for both the computer-vision and the
@@ -780,7 +808,9 @@ Cost function for evaluating actions.
 
 Additional feedback mechanisms, such as the vehicles travel-speed, may
 also prove useful in adjusting the system response.
+% --- END Discussion --- %
 
+% --- BEGIN Conclusion --- %
 \section{Conclusion}
 The BPPD method worked well in various lighting conditions and crop conditions.
 The computer-vision system achieved an average 95th percentile of <
@@ -792,4 +822,8 @@ procedure was simple
 This study was supported in part by funding provided through the
 National Science and Engineering Research of Canada (NSERC) Engage
 program with assistance from Jean Cantin of the Quebec Ministry of
-Agriculture, Fisheries and Food.
+Agriculture, Fisheries and Food (MAPAQ).
+% --- END Conclusion --- %
+
+\end{document}
+% --- END  --- %
