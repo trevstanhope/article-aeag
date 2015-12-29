@@ -1,6 +1,9 @@
 #!/bin/sh
-rm chapters/*.dvi
-rm chapters/*.aux
-rm chapters/*.log
+rm *.dvi
+rm *.aux
+rm *.log
 rm *.xml
 rm *.dvi
+rm *.pdf
+rm *.bcf
+rm *.spl
