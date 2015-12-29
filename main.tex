@@ -1,5 +1,5 @@
 % --- Header --- %
-\documentclass[review]{elsarticle}
+\documentclass[authoryear]{elsarticle}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{multirow}
@@ -13,12 +13,14 @@
 \usepackage{ragged2e}
 \usepackage{pgfplots}
 \graphicspath{ {figures/} }
+\bibliographystyle{elsarticle-harv}
 
 % --- BEGIN Document --- %
 \begin{document}
 
 % --- BEGIN Front Matter --- %
 \begin{frontmatter}
+
 \title{A system for integrating computer-vision guidance with inter-row cultivator
   implement feedback}
 \author[rvt]{Trevor Stanhope}
@@ -209,9 +211,9 @@ algorithm to detect linear rows in cauliflower, sugar beets, and
 wide-spaced wheat. In a study by Pla et al. (1997), a system using HLT
 performed with an error of 18 mm, which was considered sufficient by
 the researchers. A similar perspective approach using a band-pass
-filter proposed by Hague et al. (2001) based on prior knowledge of the
-spacing of the crop rows was developed for use on cereals and
-beets. Supported by the British Beet Research Organization the
+filter proposed by Hague et al. (2001) \citep{hague2001} based on
+prior knowledge of the spacing of the crop rows was developed for use
+on cereals and beets. Supported by the British Beet Research Organization the
 developed system was capable of 3 cm precision at speeds of up to 10
 km/h. The project was considered highly successful and was
 commercialized in 2001 in partnership with Garford Farm Machinery and
@@ -661,7 +663,7 @@ speed controller of the vehicle.
 
 % --- END Methodology --- %
 
-% --- BEGIN Results --- %
+% % --- BEGIN Results --- %
 \section{Results}
 
 \begin{table}[h]
@@ -721,7 +723,7 @@ speed controller of the vehicle.
     \end{tabular}}
  \label{table:travel_speed}
 \end{table}
-% --- END Results --- %
+% % --- END Results --- %
 
 % --- BEGIN Discussion --- %
 \section{Discussion}
@@ -835,8 +837,9 @@ also prove useful in adjusting the system response.
 The BPPD method worked well in various lighting conditions and crop conditions.
 The computer-vision system achieved an average 95th percentile of <
 4.0 cm for all crop stages, and significantly outperformed the guiding
-rods at the earliest stages of <10 cm and 10-15 cm. Calibration
-procedure was simple
+rods at the earliest stages of growth <10 cm and 10-15 cm.
+
+Calibration procedure was simple
 
 \subsection{Acknowledgements}
 This study was supported in part by funding provided through the
@@ -844,6 +847,9 @@ National Science and Engineering Research of Canada (NSERC) Engage
 program with assistance from Jean Cantin of the Quebec Ministry of
 Agriculture, Fisheries and Food (MAPAQ).
 % --- END Conclusion --- %
+
+\bibliographystyle{plainnat}
+\bibliography{references.bib}
 
 \end{document}
 % --- END  --- %
