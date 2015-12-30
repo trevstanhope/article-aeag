@@ -74,23 +74,25 @@ method for weed prevention, organic farmers must use tillage
 implements such as inter-row cultivators. Inter-row cultivation is a
 field operation which requires precise control of the implement in
 order to maximize the tillage area without causing damage to the
-crops. Often, cultivation is conducted at speeds of up to 12 km/h with
-an error tolerance of $\pm$5 cm. Many organic farmers are not equipped
-with RTK-guided tillage implements and prefer to use older,
-mechanically-guided systems. A common method for mechanically-guided
-cultivators employs guiding rods (also known as
+crops. Cultivation is often conducted at speeds of up to 12 km/h with
+an error tolerance of only $\pm$5 cm. Although many organic farmers are equipped
+with RTK-level global navigation satellite systems (GNSS) for tractor
+steering, such systems are uncommon and expensive for guiding tillage
+implements. As such, many farmers prefer to use older,
+mechanically-guided tillage systems. A common method for
+mechanically-guided cultivators employs guiding rods (also known as
 brushes) which are mounted to a rotating voltage divider
-(\ref{guiding_rods}). These rods make contact with the crop stems and their
-position approximates that of the crop row. The resulting reference
+(\ref{guiding_rods}). These rods make contact with the crop stems and
+their position approximates that of the crop row. The resulting reference
 signal is fed to a hydraulic control system which adjusts the steering
 mechanism of the implement accordingly. Although these
 mechanically-guided systems are rugged and maintainable, the guiding
 rods perform poorly with seedlings. During the early stages of growth
-guiding rods have the potential to cause damage to the crop or lose
-track of the row, forcing operators to travel at speeds of less than 6
-km/h. To address this issue, modern systems implement non-contact
-detection methods, such as a secondary RTK GPS antennae or cameras, to
-estimate the lateral offset of the cultivator.
+(e.g. $\le$15 cm), guiding rods have the potential to cause damage to
+the crop or lose track of the row, forcing operators to travel at
+speeds of less than 6 km/h. To address this issue, modern systems
+implement non-contact detection methods, such as a secondary RTK GNSS
+antennae or cameras, to estimate the lateral offset of the cultivator.
 
 \begin{figure}
   \centering
@@ -99,66 +101,69 @@ estimate the lateral offset of the cultivator.
   \label{fig:guiding_rods}
 \end{figure}
 
-The objective of this study was to develop a low-cost, embedded system
+The objective of this study was to develop a low-cost embedded system
 which extends computer-vision row detection functionality to existing
-electro-hydraulic implement guidance systems.  To be considered
-effective, the system should be capable of 4 cm precision 95 percent of the 
-time for travel speeds up to 12 km/h and for crops up to 20 cm in
-height.
+electro-hydraulic implement guidance systems. To be considered
+effective for commercial use, such a guidnace system must be capable
+of 4 cm precision 95 percent of the  time for travel speeds up to 12
+km/h and for crops up to 20 cm in height.
 % --- END Introduction --- %
 
 % --- BEGIN Literature Review --- %
 \section{Literature Review}
-Demand for high precision tractor control has produced significant
-research interest over the past two decades. Studies by Hague et
-al., Kise et al., and Astrand et al. have demonstrated that by 
-capturing a video stream of the crop rows passing by tractor, the 
-lateral offset of vehicle relative to the crop rows can be estimated
-with a high degree of consistency. The lateral offset detected in this manner
-has also been shown to be an effective input for actuating agricultural 
-implements.
+Demand for high-precision tractor control has produced significant
+research interest over the past two decades. In addition to advances
+in global navigation satellite system (GNSS) guidance systems,
+research has demonstrated that computer-vision systems can be
+implemented to detect the lateral offset of the crop rows relative to
+the tractor/implement with a high degree of reliability and accuracy.
+By integrating computer-vision systems into agricultural platforms,
+the precision of field operations can be improved. Research applications of
+computer-vision row detection have demonstrated that computer-vision
+guidance systems can be an effective approach for feedback and
+control of agricultural implements. Several different computer-vision
+methodologies have been proposed for identifying the position of the
+crop rows, including stereo-vision, Hough Line Transform, and band-pass
+analysis, among others. The predominant challenge is the
+determination of the distribution of plant foliage within the
+captured images and the subsequent differentiation between the crop
+row and soil/weeds, a process known as segmentation.
 
-Several different computer-vision methodologies have been proposed for 
-detecting the offset of the crop row such as stereo-vision, distribution
-of crop foliage, Hough transform, and band-pass analysis.
-
-In order to identify the location of the crop row, the position of
-plant foliage within the captured images must be determined. This
-process can be classified into two categories: segmentation or
-non-segmentation. During either of these processes, varying ambient light
-conditions is one of the major limiting factors for successfully
-implementing computer-vision guidance for weed control. Variations in
-the ambient color temperature occur naturally with changes in weather
-and time of day, as well as with the particular camera model being
-used. Additionally, irregular lighting intensity, also known as
-non-diffuse lighting, in the camera’s field of view, such as from
-shadows cast by the cultivator, is also a major concern. Non-diffuse
-lighting results in greater difference in the intensity of pixels and
-reduces the effectiveness when differentiating between color hues.
- 
-Several different image filtering methods can be utilized for
-segmentating of plants from soil. Using unfiltered RGB data is not
-commonly employed due to the high correlation between the three
-channels. Therefore, conversion to an alternate color-space is often
-advantagous for plant identification. An approach proposed by Meyer et
-al. (1998) demonstrates a contrast filter known as Excess Green (ExG)
-calculated using the following equation:
+% On color indices ...
+With respect to the segmentation of green vegetation (e.g. for
+crop-row tracking or weed detection), a significant amount of research
+has been focused on developing robust color indices. Using unfiltered
+RGB data is not employed due to the high correlation between the three
+channels. Therefore, conversion to an alternate color index is often
+advantagous for plant identification. Crop-specific color-indices have
+been developed for agricultural application, such as Excess Green
+(ExG) \citet{woebbecke1995} and Vegetative index (VEG)
+\citep{hague2006} have been proposed, while standard indices such
+Hue-Saturation-Value (HSV) have also seen significant implementation
+\citep{moorthy2015}. An approach proposed by \citet{meyer1998}
+demonstrates a contrast filter known as Excess Green (ExG) calculated
+using the following equation:  
 
 \begin{equation}
-    ExG = \displaystyle\sum_{j=1}^{H} \displaystyle\sum_{i=1}^{W} \frac{G_{i,j}-R_{i,j}}{R_{i,j} + G_{i,j} + B_{i,j}}
+    ExG = \displaystyle\sum_{j=1}^{H} \displaystyle\sum_{i=1}^{W}
+    \frac{G_{i,j}-R_{i,j}}{R_{i,j} + G_{i,j} + B_{i,j}}
+    \label{eq:excess_green}
 \end{equation}
 \begin{flushleft}
 where $n_{x}$ = image width (pixels); $n_{y}$ = image height (pixels).
 \end{flushleft}
 
-The transformed image is passed through a low-pass filter to remove
-bright spots before a constant threshold value of 20 on a scale of 0
-to 255 is applied. This method was tested in diffuse natural light
-conditions in a greenhouse environment between 11:30am and 12:30pm and
-resulted in a 100 successful rate of discrimination between plants and
-soil.
-
-Alternative approaches have utilized HSV transform
+% On the two big problems ...
+During the process of crop detection, varying ambient light is one of
+the major limiting factors for successfully implementing
+computer-vision guidance for weed control. Variations in the ambient
+light occur naturally with changes in weather and time of day, and can
+dramatically change the appearane crop foliage, e.g. texture and
+color, in a digital image. Additionally, non-uniform lighting
+intensity, e.g. shadows cast by the agricultural, are also a major
+concern. Non-uniform lighting results in irregular variance in the
+intensity of pixels and thus increases the complexity of segmenting
+plants using color-indices. 
 
 \begin{figure}
   \centering
@@ -167,6 +172,29 @@ Alternative approaches have utilized HSV transform
   \label{fig:hsv}
 \end{figure}
 
+% On thresholding ...
+Therefore, a necessary component of robust segmentation algorithms
+is the proper selection of threshold values to binarize the
+color-index image. Thresholding techniques proposed to 
+segment crop images include dynamic thresholding method
+\citep{rovira2005}, Otsu-based thresholding methods \citep{meyer2008}
+and statistical mean-based segmentation of the image
+\citep{guijarro2011}. Although functional, these methods generally
+assume the histogram of the image to be bimodal and require the
+vegetation and background to belong to two different brightness regions.
+
+% On learning ...
+However, although thresholding reduces errors due to varying ambient
+lighting, typically such methods experience reduced performance due to
+non-uniform illumination conditions. In recent years,
+research has been carried out on developing complex, yet efficient,
+algorithms for vegetation segmentation. Examples of such techniques
+include mean-shift-based learning procedure \citep{zheng2009},
+Environmentally Adaptive Segmentation Algorithm (EASA)
+\citep{tian1998}, and a Naive Bayes learner using HSV, G-R and
+normalized RGB \citet{moorthy2015}.  
+
+% On row detection ...
 After segmentation of the plants within the image, it is necessary to
 determine the lateral offset of the crop row. Methods for determining
 the lateral offset can be grouped into two classes based on whether
@@ -181,6 +209,7 @@ respectfully.
   \label{fig:projection}
 \end{figure}
 
+% On orthogonal approaches ...
 Orthogonal methods rely on a camera which faces vertically downward
 and is directly aligned with a single crop row of the cultivator. A
 basic approach proposed by Olson et al. (1995) for detecting the
@@ -204,14 +233,15 @@ plants. This method was tested on lettuce and tomatoes for use with a
 band sprayer operating at 8 km/h and performed successfully with
 standard error of 9 mm and within 12 mm 95\% of the time.
 
+% On perspective approaches ...
 Conversely, perspective methods rely on a camera with a positive angle
 of inclination with multiple rows in the field of view. One approach
 for perspective guidance utilizes the Hough Line Transform (HLT)
 algorithm to detect linear rows in cauliflower, sugar beets, and
-wide-spaced wheat. In a study by Pla et al. (1997), a system using HLT
+wide-spaced wheat. In a study by \citet{pla1997}, a system using HLT
 performed with an error of 18 mm, which was considered sufficient by
 the researchers. A similar perspective approach using a band-pass
-filter proposed by Hague et al. (2001) \citep{hague2001} based on
+filter proposed by \citet{hague2001} based on
 prior knowledge of the spacing of the crop rows was developed for use
 on cereals and beets. Supported by the British Beet Research Organization the
 developed system was capable of 3 cm precision at speeds of up to 10
@@ -219,6 +249,7 @@ km/h. The project was considered highly successful and was
 commercialized in 2001 in partnership with Garford Farm Machinery and
 Robodome Electronics under the name RoboCrop.
 
+% On orthogonal vs perspective ...
 When comparing the orthogonal and perspective methods, both have
 advantages and disadvantages. The perspective approach is less
 sensitive to missing plants and high weed density. However,
@@ -233,6 +264,7 @@ orthogonal systems is a concern when there are significant gaps in the
 crop rows. To address the issues inherent to the orthogonal approach,
 a system with two or more cameras may provide sufficient redundancy.
 
+% On actuation ...
 Actuation of the implement position can be achieved by several
 methods, such as vehicular steering, pivoting hitches, side-shift
 hitches, or stabilizer steering. Of these, vehicular steering has
@@ -386,8 +418,6 @@ impact on performance due to the relative lack of blue-tones in soil.
 \begin{flushleft}
 where $n$ is the percentile of the  sorted array $A$ of $C$ of length N.
 \end{flushleft}
-
-This is the band-pass algorithm which was used:
 
 \begin{equation}
 BPPD_{i,j} =
@@ -666,26 +696,90 @@ speed controller of the vehicle.
 % % --- BEGIN Results --- %
 \section{Results}
 
+% --- BEGIN Summary Table --- %
 \begin{table}[h]
   \centering
-  \caption{RMSE and 95$^{th}$ Percentile
-    with respect to crop-stage.} 
+  \caption{Summary of all trials.} 
   \scalebox{0.6}{
-    \begin{tabular}{lcccccccc}
+    \begin{tabular}{lccccc}
       \toprule
-      \multirow{2}[10]{*} & \multicolumn{4}{c}{RMSE (cm)} &
-      \multicolumn{4}{c}{95$^{th}$ Percentile (cm)} \\
-      \cmidrule(1r){2-5} \cmidrule(1r){6-9}  
-      Guiding Rods & soy ($<$15 cm) & soy ($\approx$15 cm) & soy ($>$15 cm) &  corn ($\ge$15 cm) & soy ($\le$15 cm) & soy (15 cm) & soy ($\ge$15 cm) &  corn ($\ge$15 cm) \\
+      Treatment & Crop Stage & Travel Speed (km/h) & Duration (s) &
+      RMSE (cm) & 95$^{th}$ (cm) \\
       \midrule
-      Computer-vision & 0.50 $\pm$ 0.1 & 19.36 $\pm$ 0.1 & 63.69 $\pm$ 0.1 & 65.67 $\pm$ 0.1 & 38.86 $\pm$ 0.1 & 38.9 $\pm$ 0.1 & 145.55 $\pm$ 0.1 & 143.69 $\pm$ 0.1 \\
-      Guiding rods & 21.33 $\pm$ 0.1 & 20.92 $\pm$ 0.1 & 66.33 $\pm$ 0.1 & 66.15 $\pm$ 0.1 & 6.53 $\pm$ 0.1 & 6.00 $\pm$ 0.1 & 3.84 $\pm$ 0.1 & 3.50 $\pm$ 0.1 \\
+      Computer-vision
+      & soy ($<$10 cm)
+         & 6 & 476 & 1.5 & 2.6\\
+      &  &   & 375 & 1.3 & 2.5\\
+      &  &   &  71 & 1.7 & 3.8\\
+      &  & 8 &  80 & 2.1 & 4.0\\
+      &  & 10&  61 & 2.1 & 3.8\\
+      &  &   &  50 & 1.4 & 2.4\\
+      \cmidrule(1r){2-6}
+      & soy (10$-$15 cm)
+         & 6 & 313 & 1.0 & 1.8\\
+      &  & 8 & 360 & 1.8 & 2.8\\
+      &  &   & 313 & 1.6 & 2.8\\
+      &  &   & 139 & 3.6 & 7.0\\
+      &  & 10& 380 & 1.5 & 3.0\\
+      &  & 12& 418 & 1.7 & 2.8\\
+      \cmidrule(1r){2-6}
+      & soy ($>$15 cm)
+         & 8 & 437 & 2.5 & 3.4\\
+      &  & 10& 360 & 2.1 & 3.0\\
+      &  & 12& 353 & 1.7 & 3.0\\
+      &  &   &  98 & 2.5 & 3.6\\
+      &  &   & 298 & 2.8 & 5.4\\
+      &  &   & 205 & 1.9 & 3.4\\
+      \cmidrule(1r){2-6}
+      & corn ($\ge$15 cm)
+         & 6 & 55  & 1.7 & 3.0\\
+      &  & 8 & 81  & 4.3 & 5.2\\
+      &  &   & 112 & 1.5 & 3.0\\
+      &  &   & 140 & 1.9 & 3.6\\
+      &  & 10& 189 & 1.7 & 3.4\\
+      &  &   & 225 & 1.7 & 3.0\\
+      &  & 12& 193 & 2.2 & 4.0\\
+      \midrule
+      Guiding rods
+      & soy ($<$10 cm)
+         & 6 & 58  & 2.6 & 4.6\\
+      &  &   & 76  & 3.5 & 6.6\\
+      &  & 8 & 84  & 3.4 & 7.0\\
+      &  &   & 84  & 3.5 & 5.6\\
+      &  & 10& 101 & 5.0 & 10.2\\
+      \cmidrule(1r){2-6}
+      & soy (10$-$15 cm)
+         & 8 & 140 & 3.2 & 5.8\\
+      &  &   & 100 & 4.2 & 7.0\\
+      &  & 10& 145 & 2.9 & 6.0\\
+      &  &   & 138 & 4.6 & 8.4\\
+      &  & 12& 96  & 5.0 & 9.8\\
+      \cmidrule(1r){2-6}
+      & soy ($>$15 cm)
+         & 6 & 556 & 2.0 & 4.0\\
+      &  &   & 625 & 1.0 & 2.4\\
+      &  & 10& 344 & 1.5 & 2.4\\
+      &  &   & 156 & 1.3 & 2.8\\
+      &  & 12& 107 & 1.7 & 3.0\\
+      &  &   & 146 & 2.8 & 6.2\\
+      &  &   & 104 & 1.4 & 2.6\\
+      &  &   & 153 & 1.9 & 3.0\\
+      \cmidrule(1r){2-6}
+      & corn ($\ge$15 cm)
+         & 6 & 167 & 1.6 & 3.0\\
+      &  &   & 338 & 3.7 & 6.8\\
+      &  & 8 & 195 & 2.0 & 3.8 \\
+      &  &   & 211 & 1.7 & 3.0\\
+      &  & 10& 274 & 2.0 & 3.8\\
+      &  & 12& 128 & 2.3 & 4.4\\
       \bottomrule
     \end{tabular}
   }
   \label{table:all_trials}
 \end{table}
+% --- END Summary Table --- %
 
+% --- BEGIN Crop Stage --- %
 \begin{table}[h]
   \centering
   \caption{RMSE and 95$^{th}$ Percentile
@@ -696,34 +790,17 @@ speed controller of the vehicle.
       \multirow{2}[10]{*} & \multicolumn{4}{c}{RMSE (cm)} &
       \multicolumn{4}{c}{95$^{th}$ Percentile (cm)} \\
       \cmidrule(1r){2-5} \cmidrule(1r){6-9}  
-      Guiding Rods & soy ($<$15 cm) & soy ($\approx$15 cm) & soy ($>$15 cm) &  corn ($\ge$15 cm) & soy ($\le$15 cm) & soy (15 cm) & soy ($\ge$15 cm) &  corn ($\ge$15 cm) \\
+      & soy ($\le$10 cm) & soy (10$-$15 cm) & soy ($>$15 cm) &  corn ($\ge$15 cm) & soy ($\le$10 cm) & soy (10$-$15 cm) & soy ($>$15 cm) &  corn ($\ge$15 cm) \\
       \midrule
-      Computer-vision & 0.50 $\pm$ 0.1 & 19.36 $\pm$ 0.1 & 63.69 $\pm$ 0.1 & 65.67 $\pm$ 0.1 & 38.86 $\pm$ 0.1 & 38.9 $\pm$ 0.1 & 145.55 $\pm$ 0.1 & 143.69 $\pm$ 0.1 \\
-      Guiding rods & 21.33 $\pm$ 0.1 & 20.92 $\pm$ 0.1 & 66.33 $\pm$ 0.1 & 66.15 $\pm$ 0.1 & 6.53 $\pm$ 0.1 & 6.00 $\pm$ 0.1 & 3.84 $\pm$ 0.1 & 3.50 $\pm$ 0.1 \\
+      Computer-vision & 1.70 $\pm$ 0.36 & 1.87 $\pm$ 0.91 & 2.22 $\pm$ 0.41 & 2.15 $\pm$ 0.99 & 3.18 $\pm$ 0.76 & 3.37 $\pm$ 1.83 & 3.63 $\pm$ 0.90 & 3.60 $\pm$ 0.8 \\
+      Guiding rods & 3.61 $\pm$ 0.86 & 3.98 $\pm$ 0.89 & 1.70 $\pm$ 0.55 & 2.22 $\pm$ 0.78 & 6.8 $\pm$ 2.12 & 7.40 $\pm$ 1.69 & 3.30 $\pm$ 1.28 & 4.13 $\pm$ 1.41 \\
       \bottomrule
     \end{tabular}
   }
   \label{table:travel_speed}
 \end{table}
-
-\begin{table}[h]
-  \centering
-  \caption{RMSE and 95$^{th}$ Percentile with respect to travel speed.}
-  \scalebox{0.6}{
-    \begin{tabular}{lcccccccc}
-      \toprule
-      \multirow{2}[10]{*} & \multicolumn{4}{c}{RMSE (cm)} &
-      \multicolumn{4}{c}{95$^{th}$ Percentile (cm)} \\
-      \cmidrule(1r){2-5} \cmidrule(1r){6-9}  
-      & 6 km/h & 8 km/h & 10 km/h & 12 km/h & 6 km/h & 8 km/h & 10 km/h & 12 km/h \\
-      \midrule
-      Computer-vision & 1.78 $\pm$ 0.1 & 1.9 $\pm$ 0.1 & 2.3 $\pm$ 0.1 & 2.8 $\pm$ 0.1 & 38.86 $\pm$ 0.1 & 38.9 $\pm$ 0.1 & 145.55 $\pm$ 0.1 & 143.69 $\pm$ 0.1 \\
-      Guiding rods & 21.33 $\pm$ 0.1 & 20.92 $\pm$ 0.1 & 66.33 $\pm$ 0.1 & 66.15 $\pm$ 0.1 & 38.39 $\pm$ 0.1 & 38.35 $\pm$ 0.1 & 133.34 $\pm$ 0.1 & 4.0 $\pm$ 0.1 \\
-      \bottomrule  
-    \end{tabular}}
- \label{table:travel_speed}
-\end{table}
-% % --- END Results --- %
+% --- END Crop Stage Table --- %
+% --- END Results --- %
 
 % --- BEGIN Discussion --- %
 \section{Discussion}
@@ -811,35 +888,47 @@ system-agnostic.
   \label{fig:distortion}
 \end{figure}
 
-Although manual inputs are maintained by interfacing with a hydraulic
-controller, adaptive control of the system could be implemented. Tunig
-of the PID coefficients via reinforcement learning techniques, such as
-Q-Learning, may be highly applicable to this manner of control system.
-
-A method for implementing such a adaptive controller has been
-explored. By treating subsets of the response as actions, the
-response of the system can optimized in real-time. 
+Manual adjustments are available via the control panel of the
+hydraulic controller, allowing the operator to manually override the
+offset and sensitivity of the guidance system, adaptive control of the
+system could be implemented. Uncontrollable variables of the hydraulic
+guidance system can have a detrimental impact on the performance of
+the system, e.g. soil conditions, terrain, tractor pulling power, and
+travel speed. Dynamic learning is a possible solution to this
+challenge which does not require continuous human
+intervention. Real-time reinforcement learning techniques, such as
+Q-Learning, may be highly applicable to this style of control
+system. The primary application of the Q-learning algorithm is for uncalibrated
+control of non-linear, multiple input, multiple output systems. 
+Q-learning functions on the principal that at any given
+moment, the behavior of the system can be assessed and subsequently
+rewarded or penalized). Therefore, over-time actions which resulted
+in positive behavior for a given state of the system (e.g. high gain
+when drifting away from the target) are incentivized and those which
+resulted in negative behavior (e.g. high gains resulting in
+overshooting target) are penalized. Ultimately, the learning process
+produces a non-linear response matrix which conforms to current
+working environment of the system.
 
 \begin{equation}
-  Q = 
+  Q_{t+1}(s_t,a_t) = Q_{t}(s_t,a_t) + \alpha_{t}(s_t,a_t) \times
+  \left( R_{t+1} + \gamma \times Q_{} \right)
   \label{eq:qlearning}
 \end{equation}
 \begin{flushleft}
-Cost function for evaluating actions.
+where $Q$ is the cost matrix, $s$ is the current state, and $\alpha$
+is the learning rate. 
 \end{flushleft}
-
-Additional feedback mechanisms, such as the vehicles travel-speed, may
-also prove useful in adjusting the system response.
 % --- END Discussion --- %
 
 % --- BEGIN Conclusion --- %
 \section{Conclusion}
-The BPPD method worked well in various lighting conditions and crop conditions.
+The BPPD method performed well in various lighting conditions and crop conditions.
 The computer-vision system achieved an average 95th percentile of <
 4.0 cm for all crop stages, and significantly outperformed the guiding
-rods at the earliest stages of growth <10 cm and 10-15 cm.
-
-Calibration procedure was simple
+rods at the earliest stages of growth, i.e. <10 cm and 10-15 cm. However, at
+later stages of growth (>15 cm) there was no observable difference in
+performance between the two guidance systems. 
 
 \subsection{Acknowledgements}
 This study was supported in part by funding provided through the
@@ -848,7 +937,7 @@ program with assistance from Jean Cantin of the Quebec Ministry of
 Agriculture, Fisheries and Food (MAPAQ).
 % --- END Conclusion --- %
 
-\bibliographystyle{plainnat}
+\section{References}
 \bibliography{references.bib}
 
 \end{document}

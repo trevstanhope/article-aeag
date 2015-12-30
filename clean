@@ -8,3 +8,5 @@ rm *.dvi
 rm *.pdf
 rm *.bcf
 rm *.spl
+rm *.bbl
+rm *.blg
