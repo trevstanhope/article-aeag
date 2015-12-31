@@ -14,6 +14,60 @@
 \usepackage{pgfplots}
 \graphicspath{ {figures/} }
 \bibliographystyle{elsarticle-harv}
+\usepackage{pgfplots}
+\usepgfplotslibrary{statistics}
+
+% --- PGF Plot Settings --- %
+\pgfplotsset{
+    box plot/.style={
+        /pgfplots/.cd,
+        black,
+        only marks,
+        mark=-,
+        mark size=1em,
+        /pgfplots/error bars/.cd,
+        y dir=plus,
+        y explicit,
+    },
+    box plot box/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \draw  ##1 -- ++(1em,0pt) |- ##2 -- ++(-1em,0pt) |- ##1 -- cycle;
+        },
+        /pgfplots/table/.cd,
+        y index=2,
+        y error expr={\thisrowno{3}-\thisrowno{2}},
+        /pgfplots/box plot
+    },
+    box plot top whisker/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark}%
+            {\pgfplotserrorbarsmark}%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark options}%
+            {\pgfplotserrorbarsmarkopts}%
+            \path ##1 -- ##2;
+        },
+        /pgfplots/table/.cd,
+        y index=4,
+        y error expr={\thisrowno{2}-\thisrowno{4}},
+        /pgfplots/box plot
+    },
+    box plot bottom whisker/.style={
+        /pgfplots/error bars/draw error bar/.code 2 args={%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark}%
+            {\pgfplotserrorbarsmark}%
+            \pgfkeysgetvalue{/pgfplots/error bars/error mark options}%
+            {\pgfplotserrorbarsmarkopts}%
+            \path ##1 -- ##2;
+        },
+        /pgfplots/table/.cd,
+        y index=5,
+        y error expr={\thisrowno{3}-\thisrowno{5}},
+        /pgfplots/box plot
+    },
+    box plot median/.style={
+        /pgfplots/box plot
+    }
+}
 
 % --- BEGIN Document --- %
 \begin{document}
@@ -29,7 +83,6 @@
 \ead{viacheslav.adamchuk@mail.mcgill.ca}
 \author[els]{Jofroi Desperrier-Roux}
 \ead{jofroi-desperrier@agrifusion.ca}
-
 \address[rvt]{McGill University, 21111 Lakeshore Road,
   Sainte-Anne-de-Bellevue, Quebec, Canada}
 \address[els]{Agri-Fusion 2000, Inc., 481 Chemine Saint Philippe,
@@ -61,7 +114,7 @@ soybean fields under varying ambient light and crop conditions.
 \end{abstract}
 
 \begin{keyword}
-\texttt{Computer-vision, inter-row cultivation}
+\texttt{Computer-vision, inter-row cultivation, control systems}
 \end{keyword}
 
 \end{frontmatter}
@@ -212,7 +265,7 @@ respectfully.
 % On orthogonal approaches ...
 Orthogonal methods rely on a camera which faces vertically downward
 and is directly aligned with a single crop row of the cultivator. A
-basic approach proposed by Olson et al. (1995) for detecting the
+basic approach proposed by \citet{olsen1995} for detecting the
 lateral offset of the crop relies on taking the sum of the pixel
 elements grey values in the direction of travel. The resulting curve
 represents the likelihood of the row’s position for each x-index
@@ -221,8 +274,7 @@ methods were compared: 1) a least squares regression of a sinusoidal
 wave, and 2) a Fourier Fast Transform (FFT) low-pass filter. Both
 filtration methods were effective in cereals to within an error of 10
 mm, but performed poorly on sugar beets due to their
-characteristically large leaf volume. In a similar study by Slaughter
-et al. (1995), an algorithm for detecting the lateral offset of the
+characteristically large leaf volume. In a similar study by \citet{slaughter1995}, an algorithm for detecting the lateral offset of the
 row using individual segmentation of plants in the image was
 proposed. For each plant, a histogram of the intensities was
 calculated which was then used to find the median offset of each
@@ -800,6 +852,39 @@ speed controller of the vehicle.
   \label{table:travel_speed}
 \end{table}
 % --- END Crop Stage Table --- %
+
+% --- BEGIN Tukey Table --- %
+\begin{table}[h]
+  \centering
+  \caption{Tukey multiple comparison of $95^{th}$ percentiles, $\alpha=0.05$} 
+  \scalebox{0.8}{
+    \begin{tabular}{lcccccccc}
+      \toprule
+      Computer-vision & Guiding rods & Mean (cm) & Lower (cm) & Upper (cm) & Accept \\
+      \midrule
+      corn $>$15 & \multicolumn{1}{l}{corn $\ge$15} &  0.06 &  -1.28 & 1.40 &False \\
+      corn $>$15 & \multicolumn{1}{l}{soy $<$10}   &  1.74 &   0.45 & 3.02  & True \\
+      corn $>$15 & \multicolumn{1}{l}{soy 10$-$15} &  1.41 &  -0.24 & 3.07 &False \\
+      corn $>$15 & \multicolumn{1}{l}{soy $>$15}   & -0.45 &  -1.70 & 0.79 &False \\
+      soy $<$10  & \multicolumn{1}{l}{corn $>$15}  &  0.86 &  -0.41 & 2.12& False \\
+      soy $<$10  & \multicolumn{1}{l}{soy $<$10}   & 2.53  &   1.32   &3.74  & True \\
+      soy $<$10  & \multicolumn{1}{l}{soy 10$-$15} & 2.21  &  0.61  &3.81 & True \\
+      soy $<$10  & \multicolumn{1}{l}{soy $>$15}   & 0.34  & -0.83  &1.51 &False \\
+      soy 10$-$15& \multicolumn{1}{l}{corn $\ge$15}&  0.35 &  -1.04 & 1.73 & False \\
+      soy 10$-$15& \multicolumn{1}{l}{soy $<$10}   & 2.02  &  0.68  & 3.36 & True \\
+      soy 10$-$15& \multicolumn{1}{l}{soy 10$<$15} &  1.70 &  0.00  &3.40 & True \\
+      soy 10$-$15& \multicolumn{1}{l}{soy $>$15}   & -0.17 &  -1.47 & 1.13 & False \\
+      soy $>$15  & \multicolumn{1}{l}{corn $\ge$15}& -0.01 & -1.40  &1.38 & False \\
+      soy $>$15  & \multicolumn{1}{l}{soy $<$10}   & 1.67  &  0.33  &3.00  & True \\
+      soy $>$15  & \multicolumn{1}{l}{soy 10$-$15} & 1.35  & -0.35 & 3.04 &False \\
+      soy $>$15  & \multicolumn{1}{l}{soy $>$15}   & -0.52 &  -1.82 & 0.77 &False \\
+      \bottomrule
+    \end{tabular}
+  }
+  \label{table:tukey}
+\end{table}
+% --- END Tukey Table --- %
+
 % --- END Results --- %
 
 % --- BEGIN Discussion --- %
@@ -807,13 +892,11 @@ speed controller of the vehicle.
 With respect to RMSE, the two systems performed comparatively, with an
 average RMSE of less than 3.5 cm for both the computer-vision and the
 guiding rod systems for all crop stages \ref{table:travel_speed}. However, with
-respect to the 95th percentile, usage of the guiding rods resulted in
-greater error than the computer-vision system for crops at the $\le$10 cm,
-10-15 cm, and 15-20 cm stages. Notably, the guiding rods resulted in
-an average 95th percentile of 6.57 cm and 6.53 cm for the $\le$10 cm and
-10-15 cm stages, respectively. Comparatively, the computer-vision
-system had an average 95th percentile of less than 4 cm for all four
-crop stages. The accuracy of the guiding rods increased dramatically
+respect to the 95th percentile, the guiding rods resulted in
+greater error than the computer-vision system for crops at the $\le$10
+cm and 10-15 cm stages (Table \ref{table:tukey}). Comparatively, the computer-vision
+system had an average 95th percentile of $\le$3.8 cm for all four
+crop stages with the exception of one trial. The accuracy of the guiding rods increased dramatically
 as the plants matured, resulting in a significant decline in average
 95th percentile and average RMSE at the 15-20 cm and $\ge$20 cm
 stages. The computer-vision system showed significantly lower error
@@ -833,53 +916,29 @@ range of ambient lighting. Specifically, the photosensor of the
 cameras was sensitive to infrared (IR) light and featured a built-in
 array of 24 IR LEDs. Although this feature theoretically extended the
 daily hours of operation, IR-sensitivity proved to have a negative
-affect on color-quality under intense ambient light, i.e. $\ge$50000 Lux,
+affect on color-quality under intense ambient light, i.e. $\ge$20000 Lux,
 resulting in over-exposure and blue-shifting of green tones in the HSV
-color-space. To correct this, applying contrast-limited adaptive
-histogram equalization (CLAHE) as pre-processing prior to the BPPD
+color-space. To correct for this effect, applying contrast-limited adaptive
+histogram equalization (CLAHE) as a pre-processing technique prior to the BPPD
 filter may reduce the negative affects of IR-sensitivity without
 requiring hardware changes (e.g. non-IR sensitive cameras or usage of
 an IR filtering lens).
 
 In this study, since row offsets were determined by analyzing the
 plant foliage mask in the direction of travel with a relatively small
-subject distance, no perspective or radial (also referred to as
-lens-distortion) correction was implemented. However for alternate
+subject distance, no perspective or radial distortion correction was
+implemented. However for alternate 
 usage cases, e.g. cameras aligned at the mid-point between rows, it
 would be necessary for perspective and lens-distortion correction to
 be implemented. Due to the nature of how these systems are installed,
-a versatile method for in-field camera calibration demonstrated by Lee
-et al. in 2002 can be utilized. This method makes use of a
+a versatile method for in-field camera calibration demonstrated by
+\citet{lee2002} can be utilized. This method utilizes a
 checkerboard pattern which is placed in the camera’s field of view. An
 image is captured and the positions of the corners are
 identified. Using the known size of the squares, the calibration
 coefficients can be calculated which can be used on new images to
 rectilinearize the image, thus correcting for perspective and radial
 distortion.
-
-This study focused on a rotating stabilizer hydraulic steering system
-and therefore the orientation of the crop rows relative to the
-cultivator (and by extension the cameras) was effectively
-orthogonal. This approach is appropriate for rotating stabilizer and
-center-shift steering systems; however several commercially available
-hydraulic steering system designs make use of a pivoting hitch system
-(\ref{fig:pivoting_hitch}).
-
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{pivoting_hitch.png}
-  \caption{Pivoting hitch hydraulic steering system.}
-  \label{fig:pivoting_hitch}
-\end{figure}
-
-Such pivoting hitch steering systems may rotate the cultivator toolbar
-as much as $\pm5$ degrees and would therefore significantly
-reduce the accuracy of row estimation. To compensate for this effect,
-knowledge of the camera orientation and its position relative to the
-pivot point is required. Motion estimation of the cameras using
-feature-based keypoint tracking may be a robust solution which does
-not require integration with the hitch controller and is therefore
-system-agnostic.
 
 \begin{figure}
   \centering
@@ -888,26 +947,78 @@ system-agnostic.
   \label{fig:distortion}
 \end{figure}
 
-Manual adjustments are available via the control panel of the
-hydraulic controller, allowing the operator to manually override the
-offset and sensitivity of the guidance system, adaptive control of the
-system could be implemented. Uncontrollable variables of the hydraulic
-guidance system can have a detrimental impact on the performance of
-the system, e.g. soil conditions, terrain, tractor pulling power, and
-travel speed. Dynamic learning is a possible solution to this
-challenge which does not require continuous human
+With respect to the hydraulic steering system, this study was limited
+to a rotating stabilizer implement guidance system
+and therefore the orientation of the crop rows relative to the
+cultivator (and by extension the cameras) was effectively
+orthogonal. As such, the method for row detection using histogram
+analysis in the direction of travel is appropriate for both rotating
+stabilizer and center-shift steering systems. However several
+commercially available hydraulic steering system designs make use of
+pivoting hitch systems. In such systems, the cultivator toolbar is
+rotated about a central pivot point to generate the lateral adjustment
+force (\ref{fig:pivoting_hitch}).
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{pivoting_hitch.png}
+  \caption{Pivoting hitch hydraulic steering system.}
+  \label{fig:pivoting_hitch}
+\end{figure}
+
+Pivoting hitch steering systems may rotate the cultivator toolbar as
+much as $\pm5$ degrees. This pivoting action effectively changes the
+apparent offset of the crop row (Equation \ref{eq:pivot_error}), and
+therefore would significantly reduce the accuracy of row estimation
+using the method proposed in this paper. To compensate for this
+effect, knowledge of the camera's position relative to the pivot point
+is required ($x_0$ and $y_0$) as well as the camera's instantaneous
+orientation relative to the direction of travel ($\theta_0$). Although
+the hitch's angle of orientation could be determined via sensor
+feedback from the hitch itself (e.g. via rotary encoder), an
+alternative approach using computer-vision is also an attractive
+option. Methods such the Hough Line Transform or feature-based motion
+estimation of the images (i.e. keypoint tracking) may be proove to be
+robust solutions which do not require integration with the hitch
+controller and would therefore be system-agnostic.
+
+\begin{equation}
+  \begin{split}
+  \epsilon_x = x_0 - \sqrt{x_0^2 + y_0^2} \times sin\left(\theta -
+  tan^{-1}(\frac{y_0}{x_0})\right) \\
+  \epsilon_y = y_0 - \sqrt{x_0^2 + y_0^2} \times cos\left(\theta -
+  tan^{-1}(\frac{y_0}{x_0})\right)
+  \end{split}
+  \label{eq:pivot_error}
+\end{equation}
+\begin{flushleft}
+where $x_0$ is the lateral distance from the camera to the pivot
+point, $y_0$ is the loongitudinal distance from the camera to the pivot
+point, and $\theta$ is the instantaneous orientation of the camera relative to the
+direction of travel.
+\end{flushleft}
+
+Due to the method of integrating computer-vision into an existing
+hydraulic steering controller, manual adjustments are available to the
+operator via a control panel, allowing the operator to manually override the
+offset and sensitivity of the guidance system. For such a
+steering system there exist several uncontrollable variables which can
+have a detrimental impact on the performance, e.g. soil conditions,
+terrain slope, tractor pulling power, and travel speed. To account for
+this inherent non-linearity and variability of implement steering,
+dynamic learning is a possible solution which does not require regular human
 intervention. Real-time reinforcement learning techniques, such as
-Q-Learning, may be highly applicable to this style of control
-system. The primary application of the Q-learning algorithm is for uncalibrated
-control of non-linear, multiple input, multiple output systems. 
+Q-learning, may be very applicable to this style of control
+system. The Q-learning algorithm is primarilty intended applications
+with uncalibrated control of non-linear, multiple input, multiple output systems. 
 Q-learning functions on the principal that at any given
-moment, the behavior of the system can be assessed and subsequently
-rewarded or penalized). Therefore, over-time actions which resulted
+moment the behavior of the system can be assessed and subsequently
+rewarded or penalized. Therefore, over-time actions which result
 in positive behavior for a given state of the system (e.g. high gain
 when drifting away from the target) are incentivized and those which
 resulted in negative behavior (e.g. high gains resulting in
 overshooting target) are penalized. Ultimately, the learning process
-produces a non-linear response matrix which conforms to current
+produces a non-linear response matrix which adapts to the current
 working environment of the system.
 
 \begin{equation}
