@@ -348,24 +348,21 @@ both of which are undesirable to the farmer. As such, disc-steer
 systems such as pivoting hitch or rotating stabilizers are often
 preferred by farmers for deeper cultivation practices \citep{desperrier2014}.
 
-\begin{equation}
-  D = F_{i} \left[ A + B(S) + C(S^2) \right] W * d
-  \label{eq:soil_resistance}
-\end{equation}
-
-A hydraulic hitch positional control system can be expressed as a
+% On control system ...
+A disc-steer hydraulic hitch positional control system can be simplified as a
 linear system. The output is the lateral error of the vehicle relative
 to the crop row and the input is the position of the steering
 mechanism. Additionally, state-information of the system is required,
 and it is assumed the angular speed is constant and travel speed is
 within acceptable bounds. To control this system, the voltage signal
 to the electrohydraulic steering can be modulated to adjust the
-lateral position of the cultivator.
+radial position of the cultivator discs, thus affecting the lateral
+force caused by the soil resistance (Equation \ref{eq:horizontal_force}).
 
 \begin{equation}
   F_x = V - \rho\theta(sin \beta sin \alpha \sin \theta + cos \alpha +
   cos \theta)
-  \label{eq:horizontal_velocity}
+  \label{eq:horizontal_force}
 \end{equation}
 \begin{flushleft}
 where $V_x$ is the velocity in the x-axis, $\theta$ is the yaw of the
@@ -386,7 +383,7 @@ cultivator toolbar and spaced 147.8 cm apart. The hydraulic actuation
 of the stabilizers had maximum angular travel of $\pm$1.31 rad and angular
 velocity of $~$0.4 rad/s.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{fendt_front.jpg}
   \caption{Diagram of the cultivator implement mounted to the tractor.}
@@ -400,22 +397,28 @@ center-pivot potentiometer, manual adjustment inputs, and hydraulic
 solenoids, were unmodified. This configuration allowed easily
 switching between the two modes of operation during field trials.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{agcv_diagram.png}
   \caption{Diagram of the computer-vision system integrated with hydraulic controller.}
 \end{figure}
 
 Images of the plants passing beneath the cultivator are captured by
-two weather-proof CCD cameras mounted via C-brackets to he toolbar. 
-In a compromise between the orthogonal and perspective
-methods, the two cameras were mounted at a 30$^{\circ}$ inclination from
-vertical and a subject depth of 100 cm. This approach provides
-additional longitudinal field of view without significantly
-contributing to image distortion. To provide row estimation redundancy
-in the event of regions of high weed density or gaps in the crop rows,
-the two cameras were installed on the 3rd and 9th row of the
-cultivator.
+two weather-proof CCD cameras mounted via C-brackets to he toolbar.
+In a compromise between the orthogonal and perspective methods, the
+two cameras were mounted at a low-oblique perspective of 30$^{\circ}$
+inclination from vertical and a subject depth of 100 cm. This approach
+provides additional longitudinal field of view without contributing to
+lateral image distortion. To provide row estimation redundancy in the
+event of regions of high weed density or gaps in the crop rows, the
+two cameras were installed on the 3rd and 9th rows of the cultivator
+toolbar.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{cam_mount.png}
+  \caption{Mounting system for camera and guiding rods.}
+\end{figure}
 
 An embedded Linux system based on the Debian 7.8 operating system
 (Linux Kernel 3.2) was developed for the Intel Atom D525
@@ -441,7 +444,8 @@ were hardware downscaled to a resolution of 320x240 and 16
 frames-per-second. After capturing an image, the image matrix was
 transformed from the Red-Green-Blue (RGB) color-space to the
 de-correlated Hue-Saturation-Value (HSV) color-space in order to
-simplify band-pass filtering operations (Equations \ref{eq:rgb2h} to \ref{eq:rgb2v}).
+simplify band-pass filtering operations (Equations \ref{eq:rgb2h} to
+\ref{eq:rgb2v}).
 
 \begin{equation}
   H_{i,j} =
@@ -479,6 +483,7 @@ experienced significant blue-shifting of crop foliage in very bright
 or low light, so the upper threshold for hue was set well into the
 cyan-blue region. This change did not have any noticeable negative
 impact on performance due to the relative lack of blue-tones in soil.
+
 \begin{equation}
   P_{n}(C) = A_{nN} + (nN \text{mod} 1) \times (A_{\lfloor nN \rfloor + 1}-A_{nN})
   \label{eq:percentile}
@@ -529,14 +534,14 @@ produced reliable masks in the worst-case scenarios of poor exposure and shadows
 \begin{figure}
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{bppd_normal.jpg}
-  \caption{BPPD applied to image of soy row.}
+  \caption{BPPD algorithm applied to image with diffuse lighting.}
   \label{fig:bppd_normal}
 \end{figure}
 
 \begin{figure}
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{bppd_shadow.jpg}
-  \caption{BPPD Shadow}
+  \caption{BPPD algorithm applied to image with non-uniform lighting.}
   \label{fig:bppd_shadow}
 \end{figure}
 
@@ -544,7 +549,13 @@ produced reliable masks in the worst-case scenarios of poor exposure and shadows
 After the plant foliage mask (M) has been produced, the column
 summation of the mask was calculated in the direction of travel,
 resulting in an array (C) representing the lateral distribution of
-plant foliage within the image. 
+plant foliage within the image (\ref{eq:col_sum}). Indices of the
+C-array with low values suggest bare-soil, moderate values suggest
+sparsely distributed weeds, and higher values suggest presence of the
+crop row due to the longitudinal alignment of the plant foliage. Using
+this distribution, the centroid of the crop row was estimated by
+applying a high-pass filter to select for indices which are
+significantly greater than others (\ref{eq:p_threshold}):
 
 \begin{equation}
   C_{i} = \displaystyle\sum_{j=1}^{H} M_{i,j}
@@ -553,13 +564,6 @@ plant foliage within the image.
 \begin{flushleft}
 where H=240
 \end{flushleft}
-
-Indices of the C-array with low values suggest bare-soil, moderate
-values suggest sparsely distributed weeds, and higher values suggest
-presence of the crop row due to the longitudinal alignment of the
-plant foliage. Using this distribution, the centroid of the crop row
-was estimated by applying a high-pass filter to select for indices
-which are significantly greater than others: 
 
 \begin{equation}
   p_{i} =
@@ -573,9 +577,9 @@ which are significantly greater than others:
 where $\alpha$=0.95
 \end{flushleft}
 
-The array (p) consists of all indices of the image which are most
+The resulting array (p) consists of all indices of the image which are most
 likely to represent the crop row. The estimated centroid of the crop
-row was determined by taking the weighted mean of the probable
+row was then determined by taking the weighted mean of the probable
 indices, where weight of each index was the normalized value of its
 corresponding column summation:
 
@@ -609,8 +613,8 @@ where $\epsilon$ is the maximum acceptable error tolerance, $W$ is the width of
 the camera in pixels. 
 \end{flushleft}
 
-This approach prioritizes centroid estimations which are in agreeance
-and in the event of disagreeance between the two cameras the dominant
+This approach prioritizes centroid estimations which are in
+agreeance. In the event of disagreeance between the two cameras, the dominant
 centroid was taken as the row. This provided a simplistic means for
 reducing errors due to weeds. For the sake of performance evaluation,
 the error in pixels may be converted to centimeters using the
@@ -630,17 +634,17 @@ centimeters), $w$ is the camera width (in pixels).
 \begin{figure}
   \centering
   % \includegraphics[scale=0.4]{row_estimation.jpg}
-  \caption{Demonstration of offset detection.}
+  \caption{Demonstration of crop row offset detection.}
   \label{fig:row_estimation}
 \end{figure}
 
 \subsection{Electro-hydraulic Control}
-The rotary stabilizer mechanism was operated via bang-bang hydraulic
-solenoid controller whose actuation was based on the voltage
+The rotary stabilizer mechanism was actuated via a bang-bang hydraulic
+solenoid controller whose activated was based on the voltage
 differential between the feedback signal from the row detection
-system, i.e. the guiding rods or computer-vision module, and the
-potentiometer mounted to the rotary mechanism on the hitch. 
-To generate a smooth output signal, a signal conditioning based on a
+system, i.e. the guiding rods or computer-vision module, and a
+rotary potentiometer mounted to the active mechanism of the hitch. 
+To generate a smooth output signal, signal conditioning based on a
 Proportional-Integral-Derivative (PID) feed-back controller was
 implemented. Coefficients were initially chosen to provide similar
 response to that of the guiding rods and were subsequently modified by
@@ -665,15 +669,15 @@ $M=3$ is the number of differential samples.
 \end{figure}
 
 The output value was transmitted via a weatherproof (IP68) USB
-connection to the microcontroller which was interfaced with the
-hydraulic solenoid controller. The microcontroller generates an analog
+connection to an ATMEL microcontroller which was interfaced with the
+hydraulic solenoid controller. The microcontroller generated an analog
 output signal via pulse-width modulation (PWM) to produce a voltage
-range from 0.0 V to 5.0$\pm$0.05 V. However, the operating range of the
-Sukup Auto-Guide system is from 0.10$\pm$0.02V to 8.0$\pm$0.02V with a fixed
-supply voltage of 9.70$\pm$0.02V. To account for this discrepancy, the PWM
-output range was scaled linearly and a logic level converter (LLC)
-circuit was used to rescale and shift the PWM signal to the required
-range.
+signal from 0.0 V to 5.0$\pm$0.05 V. However, the operating range of
+the Sukup Auto-Guide system was observed to vary from 0.10$\pm$0.02V
+to 8.0$\pm$0.02V with a fixed supply voltage of 9.70$\pm$0.02V. To
+account for this discrepancy, the PWM output range was scaled linearly
+and a logic level converter (LLC) circuit was used to
+shift the PWM signal to the required range.
 
 \begin{equation}
   w = 
@@ -698,14 +702,14 @@ where $V_{min}=0.10$, $V_{max}=8.00$, $V_{HV}=9.70$, $V_{LV}=5.0$
 
 To produce this output, a signal condition circuit was employed making
 use of a MOSFET logici-level converter (\ref{fig:mosfet}). This
-circuit allows the system to output a voltage using PWM to systems with different voltage
-requirements. In the event of interfacing with hydraulic systems which
-do not support a PWM input signal, a simple low-pass filter can be
-implemented (\ref{fig:lowpass}). The final output voltage represents the desired
-set-point for angle of the steering stabilizers to be reached by
-hydraulic solenoid controller. The mapping between output voltage and
-position was found to be a linear, second order system, with
-saturation.
+circuit allows the system to output a voltage using PWM to systems
+with different voltage requirements. In the event of interfacing with
+hydraulic systems which do not support a PWM input signal, a simple
+low-pass smoothing filter can be implemented (\ref{fig:lowpass}). The
+final output voltage represents the desired set-point for angle of the
+steering stabilizers to be reached by hydraulic solenoid
+controller. The mapping between output voltage and position was found
+to be a linear, second order system, with saturation.
 
 \begin{figure}
   \centering
@@ -716,8 +720,8 @@ saturation.
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.3,natwidth=610,natheight=642]{lowpass.png}
-  \caption{Low-pass filter circuit.}
+  \includegraphics[scale=0.5,natwidth=400,natheight=400]{lowpass.png}
+  \caption{Low-pass filter PWM-to-analog signal conditioning circuit.}
   \label{fig:lowpass}
 \end{figure}
 
@@ -738,17 +742,23 @@ adjustments made to the camera bracket to ensure a subject depth of
 100 cm when measured in a direct line-of-sight from the camera lens to
 the soil surface. In addition to setup of the camera bracket, the
 Sukup Auto-Guide system was configured to default settings. The
-hydraulic cultivator
-basic user tuning in the form of sensitivity and tracking adjustment
-inputs. The sensitivity adjustment effectively changes the mapping
-between voltage and radial resolution of the stabilizers, with a range
-of 1 to 10 resulting in mappings from 0.1350 rad/V to 0.3275 rad/V,
-respectively. Similarly, the tracking adjustment offsets the zero
-position of the stabilizers on a scale of -3 to +3 corresponding to
--0.435 rad to +0.435 rad, respectively. Therefore, at the beginning of
-each set of trials the following settings were ensured: (1) the
-sensitivity was set to 10 out of 10, and (2) the tracking adjustment
-was set to 0.
+hydraulic cultivator basic user tuning in the form of sensitivity and
+tracking adjustment inputs. The sensitivity adjustment effectively
+changes the mapping between voltage and radial resolution of the
+stabilizers, with a range of 1 to 10 resulting in mappings from 0.1350
+rad/V to 0.3275 rad/V, respectively. Similarly, the tracking
+adjustment offsets the zero position of the stabilizers on a scale of
+-3 to +3 corresponding to -0.435 rad to +0.435 rad,
+respectively. Therefore, at the beginning of each set of trials the
+following settings were ensured: (1) the sensitivity was set to 10 out
+of 10, and (2) the tracking adjustment was set to 0.
+
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.3,natwidth=610,natheight=642]{sukup.png}
+  \caption{Sukup Auto-guide hydraulic controller interface.}
+  \label{fig:sukup}
+\end{figure}
 
 \subsection{Field Trials}
 Field tests of the system took place over the summer of 2014 from June
@@ -772,7 +782,7 @@ speed controller of the vehicle.
 \section{Results}
 
 % --- BEGIN Summary Table --- %
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \caption{Summary of all trials.} 
   \scalebox{0.6}{
@@ -855,7 +865,7 @@ speed controller of the vehicle.
 % --- END Summary Table --- %
 
 % --- BEGIN Crop Stage --- %
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \caption{RMSE and 95$^{th}$ Percentile
     with respect to crop-stage.} 
@@ -877,7 +887,7 @@ speed controller of the vehicle.
 % --- END Crop Stage Table --- %
 
 % --- BEGIN Tukey Table --- %
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \caption{Tukey multiple comparison of $95^{th}$ percentiles, $\alpha=0.05$} 
   \scalebox{0.8}{
@@ -907,7 +917,6 @@ speed controller of the vehicle.
   \label{table:tukey}
 \end{table}
 % --- END Tukey Table --- %
-
 % --- END Results --- %
 
 % --- BEGIN Discussion --- %
@@ -916,7 +925,7 @@ With respect to RMSE, the two systems performed comparatively, with an
 average RMSE of less than 3.5 cm for both the computer-vision and the
 guiding rod systems for all crop stages
 \ref{table:travel_speed}. However, with respect to the 95th
-percentile, the guiding rods resulted in greater error than the
+percentile, the guiding rods resulted in significantly greater error than the
 computer-vision system for crops at the $\le$10 cm and 10-15 cm stages
 (Table \ref{table:tukey}). Comparatively, the computer-vision system
 had an average 95th percentile of $\le$3.8 cm for all four crop stages
@@ -926,13 +935,12 @@ significant decline in average 95th percentile and average RMSE at the
 15-20 cm and $\ge$20 cm stages. The computer-vision system showed
 significantly lower error than the guiding rods for crop stages less
 than $\le$15 cm in height, but a slight increase in error for both
-corn and soy crops greater than $>$15 cm in height.
-
-There was no apparent correlation between error and travel speed for
-both systems, either with respect to RMSE or 95th percentile. Notably,
-the computer vision guidance system outperformed the mechanical system
-at all travel speeds; however, this affect is likely due to the
-interaction with crop height, not travel speed.
+corn and soy crops greater than $>$15 cm in height. There was no
+significant correlation between error and travel speed for either guidance method,
+either with respect to RMSE or 95th percentile. Notably, the computer
+vision guidance system outperformed the mechanical system at all
+travel speeds; however, this affect is likely due to the interaction
+with crop height, not travel speed.
 
 \subsection{Future Improvements}
 Due to the fact that the cameras used for this study were intended for
@@ -949,9 +957,10 @@ pre-processing technique prior to the BPPD filter may reduce the
 negative affects of IR-sensitivity without requiring hardware changes
 (e.g. non-IR sensitive cameras or usage of an IR filtering lens).
 
-For study, row offsets were determined by analyzing the
+For this study, row offsets were determined by analyzing the
 plant foliage mask in the direction of travel with a relatively small
-subject distance. As such, no perspective or radial distortion correction was
+subject distance and cameras mounted at low-oblique perspective
+(\ref{fig:projection}). As such, no perspective or radial distortion correction was
 implemented. However for alternate usage cases, e.g. cameras aligned
 at the mid-point between rows, it would be necessary for perspective
 and lens-distortion correction to be implemented. Due to the nature of
@@ -964,26 +973,26 @@ the calibration coefficients can be calculated which can be used on
 new images to rectilinearize the image, thus correcting for
 perspective and radial distortion.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{lens_distortion.jpg}
-  \caption{Lens distortion}
+  \caption{Illustration of radial lens distortion of image.}
   \label{fig:distortion}
 \end{figure}
 
-With respect to the hydraulic steering system, this study was limited
+With respect to the hydraulic steering system, this study was restricted
 to a rotating stabilizer implement guidance system
 and therefore the orientation of the crop rows relative to the
 cultivator (and by extension the cameras) was effectively
-orthogonal. As such, the method for row detection using histogram
+orthogonal. As such, the proposed method for row detection using histogram
 analysis in the direction of travel is appropriate for both rotating
 stabilizer and center-shift steering systems. However several
 commercially available hydraulic steering system designs make use of
-pivoting hitch systems. In such systems, the cultivator toolbar is
-rotated about a central pivot point to generate the lateral adjustment
-force (\ref{fig:pivoting_hitch}).
+pivoting hitch systems. In pivoting hitch systems, the cultivator toolbar is
+rotated about a central pivot-point to produce lateral adjustment
+force on fixed cultivator discs (\ref{fig:pivoting_hitch}).
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{pivoting_hitch.png}
   \caption{Pivoting hitch hydraulic steering system \citep{fleischer1990}.}
@@ -999,10 +1008,10 @@ effect, knowledge of the camera's position relative to the pivot point
 is required ($x_0$ and $y_0$) as well as the camera's instantaneous
 orientation relative to the direction of travel ($\theta_0$). Although
 the hitch's angle of orientation could be determined via sensor
-feedback from the hitch itself (e.g. via rotary encoder), an
-alternative approach using computer-vision is also an attractive
+feedback from the hitch itself (e.g. via a rotary encoder), an
+alternate approach using computer-vision is an attractive
 option. Methods such the Hough Line Transform or feature-based motion
-estimation of the images (i.e. keypoint tracking) may be proove to be
+estimation of the images (i.e. keypoint tracking) may prove to be
 robust solutions which do not require integration with the hitch
 controller and would therefore be system-agnostic.
 
@@ -1022,48 +1031,52 @@ point, and $\theta$ is the instantaneous orientation of the camera relative to t
 direction of travel.
 \end{flushleft}
 
-Due to the method of integrating computer-vision into an existing
-hydraulic steering controller, manual adjustments are available to the
-operator via a control panel, allowing the operator to manually override the
-offset and sensitivity of the guidance system. For such a
-steering system there exist several uncontrollable variables which can
-have a detrimental impact on the performance, e.g. soil conditions,
-terrain slope, tractor pulling power, and travel speed. To account for
-this inherent non-linearity and variability of implement steering,
-dynamic learning is a possible solution which does not require regular human
-intervention. Real-time reinforcement learning techniques, such as
-Q-learning, may be very applicable to this style of control
-system. The Q-learning algorithm is primarilty intended applications
-with uncalibrated control of non-linear, multiple input, multiple output systems. 
-Q-learning functions on the principal that at any given
-moment the behavior of the system can be assessed and subsequently
-rewarded or penalized. Therefore, over-time actions which result
-in positive behavior for a given state of the system (e.g. high gain
-when drifting away from the target) are incentivized and those which
-resulted in negative behavior (e.g. high gains resulting in
-overshooting target) are penalized. Ultimately, the learning process
-produces a non-linear response matrix which adapts to the current
-working environment of the system.
-
+Due to the nature of integrating computer-vision into an existing
+hydraulic steering controller, in such a system there exist several
+uncontrollable variables which can have a detrimental effects on
+performance, e.g. soil conditions, terrain slope, tractor pulling
+power, and travel speed. To account for this inherent non-linearity
+and variability of implement steering, dynamic learning is a possible
+solution which does not require regular human intervention. Real-time
+reinforcement learning techniques, such as Q-learning, may be very
+applicable to this style of control system. The Q-learning algorithm
+is primarilty intended for applications with uncalibrated control of
+non-linear, multiple-input, multiple-output systems.  Q-learning
+functions on the principal that at any given moment the behavior of
+the system can be assessed and subsequently rewarded or
+penalized. Therefore, over-time actions which result in positive
+behavior for a given state of the system (e.g. high gain when drifting
+away from the target) are incentivized and those which resulted in
+negative behavior (e.g. high gains resulting in overshooting target)
+are penalized. Ultimately, the learning process produces a non-linear
+response matrix which adapts to the current working environment of the
+system. With respect to a cultivator guidance system, the necessary
+state-parameters could be simplified to include the lateral error, the
+projected change in error, long-term accumulative error, and travel
+speed, whereas the actions of the system could be varying
+aggressiveness of hydraulic control, i.e. low versus high gain.
 \begin{equation}
   Q_{t+1}(s_t,a_t) = Q_{t}(s_t,a_t) + \alpha_{t}(s_t,a_t) \times
-  \left( R_{t+1} + \gamma \times Q_{} \right)
+  \left( R_{t+1} + \gamma \times \text{max } Q_{t}(s_{t+1},a) - Q_{t}(s_{t},a_{t}) \right)
   \label{eq:qlearning}
 \end{equation}
 \begin{flushleft}
-where $Q$ is the cost matrix, $s$ is the current state, and $\alpha$
-is the learning rate. 
+where $Q$ is the cost matrix, $s_{t}$ is the current state, and $\alpha$
+is the learning rate, and $a_{t}$ is the current action. 
 \end{flushleft}
 % --- END Discussion --- %
 
 % --- BEGIN Conclusion --- %
 \section{Conclusion}
-The BPPD method performed well in various lighting conditions and crop conditions.
-The computer-vision system achieved an average 95th percentile of <
-4.0 cm for all crop stages, and significantly outperformed the guiding
-rods at the earliest stages of growth, i.e. soy $<$10 cm and 10$-$15 cm. However, at
-later stages of growth, soy and corn $>$15 cm, there was no observable difference in
-performance between the two guidance systems. 
+The BPPD method proved to be effective in various lighting conditions
+and crop conditions. The computer-vision system achieved an average
+95th percentile of < 4.0 cm for all crop stages, and based on the
+Tukey multiple-comparison test, significantly outperformed the guiding
+rods at the earliest stages of growth, i.e. soy $<$10 cm and 10$-$15
+cm. However, at the later stages of growth, soy and corn $>$15 cm, there
+was no significant difference in performance between the two guidance
+systems. Thus the camera system can provide farmers improved
+functionality during vital early-season cultivation.
 
 \subsection{Acknowledgements}
 This study was supported in part by funding provided through the
