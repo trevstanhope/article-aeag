@@ -265,19 +265,19 @@ respectfully.
 % On orthogonal approaches ...
 Orthogonal methods rely on a camera which faces vertically downward
 and is directly aligned with a single crop row of the cultivator. A
-basic approach proposed by \citet{olsen1995} for detecting the
-lateral offset of the crop relies on taking the sum of the pixel
-elements grey values in the direction of travel. The resulting curve
-represents the likelihood of the row’s position for each x-index
-within the image. To isolate the most probable offset, two separate
-methods were compared: 1) a least squares regression of a sinusoidal
-wave, and 2) a Fourier Fast Transform (FFT) low-pass filter. Both
-filtration methods were effective in cereals to within an error of 10
-mm, but performed poorly on sugar beets due to their
-characteristically large leaf volume. In a similar study by \citet{slaughter1995}, an algorithm for detecting the lateral offset of the
-row using individual segmentation of plants in the image was
-proposed. For each plant, a histogram of the intensities was
-calculated which was then used to find the median offset of each
+basic approach proposed by \citet{olsen1995} for detecting the lateral
+offset of the crop relies on taking the sum of the pixel elements grey
+values in the direction of travel. The resulting curve represents the
+likelihood of the row’s position for each x-index within the image. To
+isolate the most probable offset, two separate methods were compared:
+1) a least squares regression of a sinusoidal wave, and 2) a Fourier
+Fast Transform (FFT) low-pass filter. Both filtration methods were
+effective in cereals to within an error of 10 mm, but performed poorly
+on sugar beets due to their characteristically large leaf volume. In a
+similar study by \citet{slaughter1995}, an algorithm for detecting the
+lateral offset of the row using individual segmentation of plants in
+the image was proposed. For each plant, a histogram of the intensities
+was calculated which was then used to find the median offset of each
 plant. If a plant’s median was significantly different than the other
 plants in the image, it was considered a weed and disregarded. The row
 offset was then calculated based on the medians of the remaining
@@ -682,21 +682,29 @@ where $V_{min}=0.10$, $V_{max}=8.00$, $V_{HV}=9.70$, $V_{LV}=5.0$
 \end{flushleft}
 
 To produce this output, a signal condition circuit was employed making
-use of a MOSFET logici-level converter. This allows the system to
-output a voltage using PWM to systems with different voltage
-requirements.
+use of a MOSFET logici-level converter (\ref{fig:mosfet}). This
+circuit allows the system to output a voltage using PWM to systems with different voltage
+requirements. In the event of interfacing with hydraulic systems which
+do not support a PWM input signal, a simple low-pass filter can be
+implemented (\ref{fig:lowpass}). The final output voltage represents the desired
+set-point for angle of the steering stabilizers to be reached by
+hydraulic solenoid controller. The mapping between output voltage and
+position was found to be a linear, second order system, with
+saturation.
 
 \begin{figure}
   \centering
-  \includegraphics[scale=0.3,natwidth=610,natheight=642]{signal_conditioning.png}
-  \caption{Rotating stabilizers}
-  \label{fig:signal_conditioning}
+  \includegraphics[scale=0.3,natwidth=610,natheight=642]{mosfet.png}
+  \caption{MOSFET logic level converter circuit.}
+  \label{fig:mosfet}
 \end{figure}
 
-This final output voltage represents the desired set-point for angle
-of the steering stabilizers to be reached by hydraulic solenoid
-controller. The mapping between output voltage and position was found
-to be a linear, second order system, with saturation.
+\begin{figure}
+  \centering
+  \includegraphics[scale=0.3,natwidth=610,natheight=642]{lowpass.png}
+  \caption{Low-pass filter circuit.}
+  \label{fig:lowpass}
+\end{figure}
 
 \begin{equation}
   \frac{d^2}{dt^2}x + 2\zeta\omega_{n}\frac{d}{dt}x + \omega_{n}^2 Kx = 0 
@@ -733,8 +741,8 @@ cultivars were considered for this study, therefore no pesticides were
 applied to the fields and weeds were present during testing. All
 fields used during testing were maintained by Agri-Fusion 2000 Inc., a
 4000 ha organic farming operation in St-Polycarpe, Quebec. Trials were
-classified into four stages of crop development: $\le$10 cm, 10 - 15
-cm, 15 - 20 cm, and $\ge$20 cm. For each run, five representative
+classified into four stages of crop development: soy $\le$10 cm, soy 10 - 15
+cm, soy $>$15 cm, and corn $\ge$15 cm. For each run, five representative
 locations along the row were selected and the height of the crop from
 the soil surface was observed using a tape measure, and the resulting
 average determined the height stage of the trial. To determine the
@@ -742,10 +750,9 @@ reliability of the two systems at differing speeds of operation,
 trials were conducted at four approximate travel speeds: 6, 8, 10, and
 12 km/h. The travel speed of the tractor was set via the automatic
 speed controller of the vehicle.
-
 % --- END Methodology --- %
 
-% % --- BEGIN Results --- %
+% --- BEGIN Results --- %
 \section{Results}
 
 % --- BEGIN Summary Table --- %
@@ -916,29 +923,28 @@ range of ambient lighting. Specifically, the photosensor of the
 cameras was sensitive to infrared (IR) light and featured a built-in
 array of 24 IR LEDs. Although this feature theoretically extended the
 daily hours of operation, IR-sensitivity proved to have a negative
-affect on color-quality under intense ambient light, i.e. $\ge$20000 Lux,
-resulting in over-exposure and blue-shifting of green tones in the HSV
-color-space. To correct for this effect, applying contrast-limited adaptive
-histogram equalization (CLAHE) as a pre-processing technique prior to the BPPD
-filter may reduce the negative affects of IR-sensitivity without
-requiring hardware changes (e.g. non-IR sensitive cameras or usage of
-an IR filtering lens).
+affect on color-quality under intense ambient light, i.e. $\ge$20000
+Lux, resulting in over-exposure and blue-shifting of green tones in
+the HSV color-space. To correct for this effect, applying
+contrast-limited adaptive histogram equalization (CLAHE) as a
+pre-processing technique prior to the BPPD filter may reduce the
+negative affects of IR-sensitivity without requiring hardware changes
+(e.g. non-IR sensitive cameras or usage of an IR filtering lens).
 
 In this study, since row offsets were determined by analyzing the
 plant foliage mask in the direction of travel with a relatively small
 subject distance, no perspective or radial distortion correction was
-implemented. However for alternate 
-usage cases, e.g. cameras aligned at the mid-point between rows, it
-would be necessary for perspective and lens-distortion correction to
-be implemented. Due to the nature of how these systems are installed,
-a versatile method for in-field camera calibration demonstrated by
-\citet{lee2002} can be utilized. This method utilizes a
-checkerboard pattern which is placed in the camera’s field of view. An
-image is captured and the positions of the corners are
-identified. Using the known size of the squares, the calibration
-coefficients can be calculated which can be used on new images to
-rectilinearize the image, thus correcting for perspective and radial
-distortion.
+implemented. However for alternate usage cases, e.g. cameras aligned
+at the mid-point between rows, it would be necessary for perspective
+and lens-distortion correction to be implemented. Due to the nature of
+how these systems are installed, a versatile method for in-field
+camera calibration demonstrated by \citet{lee2002} can be
+utilized. This method utilizes a checkerboard pattern which is placed
+in the camera’s field of view. An image is captured and the positions
+of the corners are identified. Using the known size of the squares,
+the calibration coefficients can be calculated which can be used on
+new images to rectilinearize the image, thus correcting for
+perspective and radial distortion.
 
 \begin{figure}
   \centering
