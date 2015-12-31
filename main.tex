@@ -16,6 +16,7 @@
 \bibliographystyle{elsarticle-harv}
 \usepackage{pgfplots}
 \usepgfplotslibrary{statistics}
+\usepackage{float}
 
 % --- PGF Plot Settings --- %
 \pgfplotsset{
@@ -167,35 +168,40 @@ km/h and for crops up to 20 cm in height.
 Demand for high-precision tractor control has produced significant
 research interest over the past two decades. In addition to advances
 in global navigation satellite system (GNSS) guidance systems,
-research has demonstrated that computer-vision systems can be
-implemented to detect the lateral offset of the crop rows relative to
-the tractor/implement with a high degree of reliability and accuracy.
-By integrating computer-vision systems into agricultural platforms,
-the precision of field operations can be improved. Research applications of
-computer-vision row detection have demonstrated that computer-vision
-guidance systems can be an effective approach for feedback and
-control of agricultural implements. Several different computer-vision
-methodologies have been proposed for identifying the position of the
-crop rows, including stereo-vision, Hough Line Transform, and band-pass
-analysis, among others. The predominant challenge is the
-determination of the distribution of plant foliage within the
-captured images and the subsequent differentiation between the crop
-row and soil/weeds, a process known as segmentation.
+research has demonstrated that mechanical and computer-vision systems
+can be implemented to detect the lateral offset of the crop rows
+relative to the tractor/implement with a high degree of reliability
+and accuracy \citep{tillett1991}. By integrating computer-vision
+systems into agricultural platforms, the precision of field operations
+can be improved. Research applications of computer-vision row
+detection have demonstrated that computer-vision guidance systems can
+be an effective approach for feedback and control of agricultural
+implements. Several different computer-vision methodologies have been
+proposed for identifying the position of the crop rows, including
+stereo-vision, Hough Line Transform, multispectral imaging, and
+band-pass analysis, among others. A common challenge faced by
+computer-vision systems is the determination of the distribution of plant
+foliage within the captured images and the subsequent differentiation
+between the crop row and soil/weeds, a process known as segmentation
+\citep{brivot1996}.
 
 % On color indices ...
 With respect to the segmentation of green vegetation (e.g. for
 crop-row tracking or weed detection), a significant amount of research
 has been focused on developing robust color indices. Using unfiltered
-RGB data is not employed due to the high correlation between the three
-channels. Therefore, conversion to an alternate color index is often
-advantagous for plant identification. Crop-specific color-indices have
-been developed for agricultural application, such as Excess Green
-(ExG) \citet{woebbecke1995} and Vegetative index (VEG)
-\citep{hague2006} have been proposed, while standard indices such
-Hue-Saturation-Value (HSV) have also seen significant implementation
-\citep{moorthy2015}. An approach proposed by \citet{meyer1998}
-demonstrates a contrast filter known as Excess Green (ExG) calculated
-using the following equation:  
+RGB data from CCD/CMOS cameras is not employed due to the high
+correlation between the three color channels. Research has shown that
+imaging a combination of bands in the visible and infra-red spectrum
+produces reliable results \citep{slaughter2008}, however this requires
+specialized camera systems. Therefore, when using RGB imaging systems
+conversion to an alternate color index is advantagous for plant
+segmentation. Crop-specific color-indices have been developed for
+agricultural application, such as Excess Green (ExG)
+\citet{woebbecke1995} and Vegetative index (VEG) \citep{hague2006},
+while standard indices such Hue-Saturation-Value (HSV) have also seen
+implementation \citep{moorthy2015}. An approach proposed by
+\citet{meyer1998} demonstrates a contrast filter known as Excess Green
+(ExG) calculated using the following equation:
 
 \begin{equation}
     ExG = \displaystyle\sum_{j=1}^{H} \displaystyle\sum_{i=1}^{W}
@@ -211,12 +217,12 @@ During the process of crop detection, varying ambient light is one of
 the major limiting factors for successfully implementing
 computer-vision guidance for weed control. Variations in the ambient
 light occur naturally with changes in weather and time of day, and can
-dramatically change the appearane crop foliage, e.g. texture and
+dramatically change the appearance of crop foliage, e.g. texture and
 color, in a digital image. Additionally, non-uniform lighting
-intensity, e.g. shadows cast by the agricultural, are also a major
-concern. Non-uniform lighting results in irregular variance in the
-intensity of pixels and thus increases the complexity of segmenting
-plants using color-indices. 
+intensity, e.g. shadows, are also a major concern. Non-uniform
+lighting results in irregular variance in the intensity of pixels and
+thus increases the complexity of segmenting plants using
+color-indices.
 
 \begin{figure}
   \centering
@@ -226,18 +232,19 @@ plants using color-indices.
 \end{figure}
 
 % On thresholding ...
-Therefore, a necessary component of robust segmentation algorithms
+Therefore, a necessary component of any robust segmentation algorithm
 is the proper selection of threshold values to binarize the
 color-index image. Thresholding techniques proposed to 
-segment crop images include dynamic thresholding method
+segment crop images include dynamic thresholding methods
 \citep{rovira2005}, Otsu-based thresholding methods \citep{meyer2008}
 and statistical mean-based segmentation of the image
 \citep{guijarro2011}. Although functional, these methods generally
 assume the histogram of the image to be bimodal and require the
-vegetation and background to belong to two different brightness regions.
+vegetation and background to belong to two different brightness
+regions.
 
 % On learning ...
-However, although thresholding reduces errors due to varying ambient
+Although thresholding reduces errors due to varying ambient
 lighting, typically such methods experience reduced performance due to
 non-uniform illumination conditions. In recent years,
 research has been carried out on developing complex, yet efficient,
@@ -245,7 +252,7 @@ algorithms for vegetation segmentation. Examples of such techniques
 include mean-shift-based learning procedure \citep{zheng2009},
 Environmentally Adaptive Segmentation Algorithm (EASA)
 \citep{tian1998}, and a Naive Bayes learner using HSV, G-R and
-normalized RGB \citet{moorthy2015}.  
+normalized RGB \citet{moorthy2015}.
 
 % On row detection ...
 After segmentation of the plants within the image, it is necessary to
@@ -274,7 +281,7 @@ isolate the most probable offset, two separate methods were compared:
 Fast Transform (FFT) low-pass filter. Both filtration methods were
 effective in cereals to within an error of 10 mm, but performed poorly
 on sugar beets due to their characteristically large leaf volume. In a
-similar study by \citet{slaughter1995}, an algorithm for detecting the
+similar study by \citet{slaughter1997}, an algorithm for detecting the
 lateral offset of the row using individual segmentation of plants in
 the image was proposed. For each plant, a histogram of the intensities
 was calculated which was then used to find the median offset of each
@@ -304,33 +311,42 @@ Robodome Electronics under the name RoboCrop.
 % On orthogonal vs perspective ...
 When comparing the orthogonal and perspective methods, both have
 advantages and disadvantages. The perspective approach is less
-sensitive to missing plants and high weed density. However,
-perspective methods rely on prior knowledge of the crop spacing and
-linear rows with low curvature. Comparatively, orthogonal systems
-optimize resolution, in pixels-per-centimeter, and require very only
-basic calibration. Lens distortion is an issue for perspective
-systems. To compensate for increased subject distance, perspective
-methods require a higher resolution camera, resulting in greater
-computational requirements and costs. The reduced field of view for
-orthogonal systems is a concern when there are significant gaps in the
-crop rows. To address the issues inherent to the orthogonal approach,
-a system with two or more cameras may provide sufficient redundancy.
+sensitive to missing plants and high weed density due to the greater
+field of view. However, perspective methods rely on prior knowledge of
+the crop spacing and linear rows with low curvature. Comparatively,
+orthogonal systems optimize resolution, in pixels-per-centimeter, and
+require only basic calibration. Conversely, lens distortion is an
+issue for perspective systems due to the greater subject distance and
+orientation of the camera. To compensate for increased subject
+distance, perspective methods require a higher resolution camera,
+resulting in greater computational requirements and costs. The reduced
+field of view for orthogonal systems is a concern when there are
+significant gaps in the crop rows. To address the issues inherent to
+the orthogonal approach, a system with two or more cameras may provide
+sufficient redundancy and cameras can be oriented width-wise to the
+crop row to increase the effective field of view along the direction
+of travel \citep{slaughter1995patent}.
 
 % On actuation ...
-Actuation of the implement position can be achieved by several
+Actuation of a cultivator implement can be achieved by several
 methods, such as vehicular steering, pivoting hitches, side-shift
 hitches, or stabilizer steering. Of these, vehicular steering has
-received tremendous interest however is not applicable in all
-environments. Some providers have produced mountable steering but no
-computer-vision versions have been successfully produced. Pivoting
-hitch systems have also been manufactured. For light cultivation, the
-side-shift style hitch has been demonstrated to be effective. However,
-this method causes problems when mounted to a heavy cultivator (deep
-harrows or coulters) due to “jumping”, i.e. the effect of the hitch
-shifting the tractor. To address this requires either removing tools
-or dramatically increasing the weight of the tractor, both of which
-are undesirable to the farmer. Stabilizer steering has applications in
-heavier tillage.
+received tremendous interest, however due to the soil forces acting on
+seperate mechanics affect the implements position relative to the
+vehicle and therefore solely relying on vehicular steering is not
+applicable in all environments. Actuated hitch systems, such as
+disc-steer and side-shift systems, have also seen commercial
+success. For light cultivation, both disc-steer and side-shift style
+control has been demonstrated to be effective at speeds $\le$8 km/h
+and on flat terrain \citep{kocher2000}. However, side-shift systems
+have been observed to cause problems when the implement is configured
+for heavier cultivation (e.g. deep harrows or coulters) due to
+“jumping”, i.e. the effect of the hitch shifting the tractor
+. To address this problem either requires either
+removing tools or dramatically increasing the weight of the tractor,
+both of which are undesirable to the farmer. As such, disc-steer
+systems such as pivoting hitch or rotating stabilizers are often
+preferred by farmers for deeper cultivation practices \citep{desperrier2014}.
 
 \begin{equation}
   D = F_{i} \left[ A + B(S) + C(S^2) \right] W * d
@@ -368,7 +384,7 @@ to a row-spacing of 30 inches. Steering actuation of the cultivator
 was achieved via two 75 cm stabilizers mounted 165 cm behind the
 cultivator toolbar and spaced 147.8 cm apart. The hydraulic actuation
 of the stabilizers had maximum angular travel of $\pm$1.31 rad and angular
-velocity of 0.4 rad/s.
+velocity of $~$0.4 rad/s.
 
 \begin{figure}
   \centering
@@ -418,9 +434,9 @@ host. Lastly, a graphical user interface was developed in order to provide a
 live video feed for the operator.
 
 \subsection{Plant Segmentation}
-Video of the crop rows were captured in real-time from the two CCD
+Images of the crop rows were captured in real-time from two CCD
 cameras. The cameras used for this study had a native resolution and
-frame-rate of 640x480 and 25 frames-per-second, respectively. However,
+frame-rate of 640x480 and 25 frames-per-second, respectively. However, 
 were hardware downscaled to a resolution of 320x240 and 16
 frames-per-second. After capturing an image, the image matrix was
 transformed from the Red-Green-Blue (RGB) color-space to the
@@ -505,10 +521,10 @@ M = BPPD \otimes
 where K is a 3 by 3 kernel.
 \end{flushleft}
 
-This three step process is computationally non-intensive, yet produces
+This three step process was computationally non-intensive, yet produced
 sufficient segmentation in diverse lighting conditions. Notably, the
 percentile-based band-pass filters of saturation and intensity
-produced reliable masks in scenarios of extreme exposure and shadows.
+produced reliable masks in the worst-case scenarios of poor exposure and shadows.
 
 \begin{figure}
   \centering
@@ -611,8 +627,6 @@ where $e$ is the error, $W$ is the field-of-view of the camera (in
 centimeters), $w$ is the camera width (in pixels).
 \end{flushleft}
 
-This is what it looks like:
-
 \begin{figure}
   \centering
   % \includegraphics[scale=0.4]{row_estimation.jpg}
@@ -631,6 +645,7 @@ Proportional-Integral-Derivative (PID) feed-back controller was
 implemented. Coefficients were initially chosen to provide similar
 response to that of the guiding rods and were subsequently modified by
 trial and error.
+
 \begin{equation}
     u(t) = K_{P}e_{t} + \frac{K_{I}}{N}\displaystyle\sum_i^N \left[
       e_{t-i} \right] +
@@ -720,13 +735,14 @@ measurements with a tape measure at the working tools; (2) lateral
 adjustments were made to the camera bracket to ensure the vertical
 center-line of each camera was aligned with the crop row; (3) vertical
 adjustments made to the camera bracket to ensure a subject depth of
-100 cm from the camera lens to the soil surface.
-
-Additionally, the Sukup Auto-Guide system provides basic user tuning
-in the form of sensitivity and tracking adjustment inputs. The
-sensitivity adjustment effectively changes the mapping between voltage
-and radial resolution of the stabilizers, with a range of 1 to 10
-resulting in mappings from 0.1350 rad/V to 0.3275 rad/V,
+100 cm when measured in a direct line-of-sight from the camera lens to
+the soil surface. In addition to setup of the camera bracket, the
+Sukup Auto-Guide system was configured to default settings. The
+hydraulic cultivator
+basic user tuning in the form of sensitivity and tracking adjustment
+inputs. The sensitivity adjustment effectively changes the mapping
+between voltage and radial resolution of the stabilizers, with a range
+of 1 to 10 resulting in mappings from 0.1350 rad/V to 0.3275 rad/V,
 respectively. Similarly, the tracking adjustment offsets the zero
 position of the stabilizers on a scale of -3 to +3 corresponding to
 -0.435 rad to +0.435 rad, respectively. Therefore, at the beginning of
@@ -898,17 +914,19 @@ speed controller of the vehicle.
 \section{Discussion}
 With respect to RMSE, the two systems performed comparatively, with an
 average RMSE of less than 3.5 cm for both the computer-vision and the
-guiding rod systems for all crop stages \ref{table:travel_speed}. However, with
-respect to the 95th percentile, the guiding rods resulted in
-greater error than the computer-vision system for crops at the $\le$10
-cm and 10-15 cm stages (Table \ref{table:tukey}). Comparatively, the computer-vision
-system had an average 95th percentile of $\le$3.8 cm for all four
-crop stages with the exception of one trial. The accuracy of the guiding rods increased dramatically
-as the plants matured, resulting in a significant decline in average
-95th percentile and average RMSE at the 15-20 cm and $\ge$20 cm
-stages. The computer-vision system showed significantly lower error
-than the guiding rods for crop stages less than 20 cm in height, but a
-slight increase in error for plants greater than 20 cm. 
+guiding rod systems for all crop stages
+\ref{table:travel_speed}. However, with respect to the 95th
+percentile, the guiding rods resulted in greater error than the
+computer-vision system for crops at the $\le$10 cm and 10-15 cm stages
+(Table \ref{table:tukey}). Comparatively, the computer-vision system
+had an average 95th percentile of $\le$3.8 cm for all four crop stages
+with the exception of one trial. The accuracy of the guiding rods
+increased dramatically as the plants matured, resulting in a
+significant decline in average 95th percentile and average RMSE at the
+15-20 cm and $\ge$20 cm stages. The computer-vision system showed
+significantly lower error than the guiding rods for crop stages less
+than $\le$15 cm in height, but a slight increase in error for both
+corn and soy crops greater than $>$15 cm in height.
 
 There was no apparent correlation between error and travel speed for
 both systems, either with respect to RMSE or 95th percentile. Notably,
@@ -931,14 +949,14 @@ pre-processing technique prior to the BPPD filter may reduce the
 negative affects of IR-sensitivity without requiring hardware changes
 (e.g. non-IR sensitive cameras or usage of an IR filtering lens).
 
-In this study, since row offsets were determined by analyzing the
+For study, row offsets were determined by analyzing the
 plant foliage mask in the direction of travel with a relatively small
-subject distance, no perspective or radial distortion correction was
+subject distance. As such, no perspective or radial distortion correction was
 implemented. However for alternate usage cases, e.g. cameras aligned
 at the mid-point between rows, it would be necessary for perspective
 and lens-distortion correction to be implemented. Due to the nature of
 how these systems are installed, a versatile method for in-field
-camera calibration demonstrated by \citet{lee2002} can be
+camera calibration demonstrated by \citet{lee2009} can be
 utilized. This method utilizes a checkerboard pattern which is placed
 in the camera’s field of view. An image is captured and the positions
 of the corners are identified. Using the known size of the squares,
@@ -968,7 +986,7 @@ force (\ref{fig:pivoting_hitch}).
 \begin{figure}
   \centering
   \includegraphics[width=0.8\textwidth,natwidth=610,natheight=642]{pivoting_hitch.png}
-  \caption{Pivoting hitch hydraulic steering system.}
+  \caption{Pivoting hitch hydraulic steering system \citep{fleischer1990}.}
   \label{fig:pivoting_hitch}
 \end{figure}
 
@@ -1043,8 +1061,8 @@ is the learning rate.
 The BPPD method performed well in various lighting conditions and crop conditions.
 The computer-vision system achieved an average 95th percentile of <
 4.0 cm for all crop stages, and significantly outperformed the guiding
-rods at the earliest stages of growth, i.e. <10 cm and 10-15 cm. However, at
-later stages of growth (>15 cm) there was no observable difference in
+rods at the earliest stages of growth, i.e. soy $<$10 cm and 10$-$15 cm. However, at
+later stages of growth, soy and corn $>$15 cm, there was no observable difference in
 performance between the two guidance systems. 
 
 \subsection{Acknowledgements}
