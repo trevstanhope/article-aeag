@@ -380,8 +380,8 @@ throughout the testing period. The cultivator toolbar was configured
 to a row-spacing of 30 inches. Steering actuation of the cultivator
 was achieved via two 75 cm stabilizers mounted 165 cm behind the
 cultivator toolbar and spaced 147.8 cm apart. The hydraulic actuation
-of the stabilizers had maximum angular travel of $\pm$1.31 rad and angular
-velocity of $~$0.4 rad/s.
+of the stabilizers had a $\pm$1.31 rad angular range of
+motion and a max angular velocity of $~$0.4 rad/s.
 
 \begin{figure}[H]
   \centering
@@ -613,21 +613,22 @@ where $\epsilon$ is the maximum acceptable error tolerance, $W$ is the width of
 the camera in pixels. 
 \end{flushleft}
 
+% mm/px conversion for error based on camera parameters
 This approach prioritizes centroid estimations which are in
 agreeance. In the event of disagreeance between the two cameras, the dominant
 centroid was taken as the row. This provided a simplistic means for
 reducing errors due to weeds. For the sake of performance evaluation,
 the error in pixels may be converted to centimeters using the
-relationship between the cameras’ field-of-view of 64 cm, measured
+relationship between the cameras’ field-of-view of 48 cm, measured
 width-wise along the center-line, at a subject depth of 100 cm. For a
-resolution of 320 px in width, this results in a resolution of 0.2 cm/px.
+resolution of 240 px in width, this results in a resolution of 0.2 cm/px.
 
 \begin{equation}
-  x = \frac{We}{w}
+  e = \frac{Wx}{w}
   \label{eq:px2mm}
 \end{equation}
 \begin{flushleft}
-where $e$ is the error, $W$ is the field-of-view of the camera (in
+where $x$ is the lateral error (px), $W$ is the field-of-view of the camera (in
 centimeters), $w$ is the camera width (in pixels).
 \end{flushleft}
 
@@ -639,16 +640,16 @@ centimeters), $w$ is the camera width (in pixels).
 \end{figure}
 
 \subsection{Electro-hydraulic Control}
-The rotary stabilizer mechanism was actuated via a bang-bang hydraulic
-solenoid controller whose activated was based on the voltage
+Two rear stabilizers were actuated via a bang-bang hydraulic
+solenoid controller. Control of the hydraulic system is driven by the voltage
 differential between the feedback signal from the row detection
 system, i.e. the guiding rods or computer-vision module, and a
 rotary potentiometer mounted to the active mechanism of the hitch. 
-To generate a smooth output signal, signal conditioning based on a
-Proportional-Integral-Derivative (PID) feed-back controller was
-implemented. Coefficients were initially chosen to provide similar
-response to that of the guiding rods and were subsequently modified by
-trial and error.
+For the computer-system control signal, signal conditioning was
+implemented based on a Proportional-Integral-Derivative (PID)
+feed-back controller. Coefficients were initially chosen to provide
+similar response to that of the guiding rods and were subsequently
+modified by trial and error.
 
 \begin{equation}
     u(t) = K_{P}e_{t} + \frac{K_{I}}{N}\displaystyle\sum_i^N \left[
@@ -657,8 +658,8 @@ trial and error.
   \label{eq:pid}
 \end{equation}
 \begin{flushleft}
-where $K_{P}=1.0$, $K_{I}=4.0$, $K_{D}=0.5$, $N=15$ is the number of integral samples,
-$M=3$ is the number of differential samples.
+where $K_{P}=1.0$, $K_{I}=4.0$, $K_{D}=0.5$, $N=16$ is the number of integral samples,
+$M=16$ is the number of differential samples.
 \end{flushleft}
 
 \begin{figure}
@@ -676,8 +677,8 @@ signal from 0.0 V to 5.0$\pm$0.05 V. However, the operating range of
 the Sukup Auto-Guide system was observed to vary from 0.10$\pm$0.02V
 to 8.0$\pm$0.02V with a fixed supply voltage of 9.70$\pm$0.02V. To
 account for this discrepancy, the PWM output range was scaled linearly
-and a logic level converter (LLC) circuit was used to
-shift the PWM signal to the required range.
+and a MOSFET logic level converter (LLC) circuit was used to
+shift the PWM signal to the required range (\ref{fig:mosfet}).
 
 \begin{equation}
   w = 
@@ -700,16 +701,15 @@ where $V_{min}=0.10$, $V_{max}=8.00$, $V_{HV}=9.70$, $V_{LV}=5.0$
 where $V_{min}=0.10$, $V_{max}=8.00$, $V_{HV}=9.70$, $V_{LV}=5.0$
 \end{flushleft}
 
-To produce this output, a signal condition circuit was employed making
-use of a MOSFET logici-level converter (\ref{fig:mosfet}). This
-circuit allows the system to output a voltage using PWM to systems
+\begin{flushleft}
+This circuit configuration allows the system to output a voltage using PWM to systems
 with different voltage requirements. In the event of interfacing with
 hydraulic systems which do not support a PWM input signal, a simple
 low-pass smoothing filter can be implemented (\ref{fig:lowpass}). The
-final output voltage represents the desired set-point for angle of the
-steering stabilizers to be reached by hydraulic solenoid
-controller. The mapping between output voltage and position was found
+final output voltage represents the set-point to be reached for angle of the
+steering stabilizers. The mapping between output voltage and position was found
 to be a linear, second order system, with saturation.
+\end{flushleft}
 
 \begin{figure}
   \centering
@@ -776,6 +776,16 @@ reliability of the two systems at differing speeds of operation,
 trials were conducted at four approximate travel speeds: 6, 8, 10, and
 12 km/h. The travel speed of the tractor was set via the automatic
 speed controller of the vehicle.
+
+Each run consisted of a single-pass across the field. Prior to each
+run, tractor and cultivator implement were aligned with the crop-row.
+Once aligned, either the computer-vision or guiding rod systems were
+connected to the controller. Once active, the system logger was
+started and the tractor was engaged to the appropriate travel
+speed. Tractors were driven by professional operators during trial runs.
+Due to restrictions with respect to crop health, some
+combinations of crop stage and travel speed were not tested
+extensively, i.e. 12 km/h was not tested at the $\le$10cm soy stage.
 % --- END Methodology --- %
 
 % --- BEGIN Results --- %
@@ -922,7 +932,7 @@ speed controller of the vehicle.
 % --- BEGIN Discussion --- %
 \section{Discussion}
 With respect to RMSE, the two systems performed comparatively, with an
-average RMSE of less than 3.5 cm for both the computer-vision and the
+average RMSE of less than $\le$3.98 cm for both the computer-vision and the
 guiding rod systems for all crop stages
 \ref{table:travel_speed}. However, with respect to the 95th
 percentile, the guiding rods resulted in significantly greater error than the
