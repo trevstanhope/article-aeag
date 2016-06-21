@@ -1,6 +1,0 @@
-Aziz, K. A., El-Bardini, M., & El-Rabaie, N. M. (August 26, 2015). Embedded Adaptive Fuzzy Controller Based on Reinforcement Learning for DC Motor with Flexible Shaft. Arabian Journal for Science and Engineering, 40, 8, 2389-2406.
-
-Brown, Duane C. (May 1966). "Decentering distortion of lenses"
-(PDF). Photogrammetric Engineering. 32 (3): 444–462.
-
- Zhang, Zhengyou (1998). A Flexible New Technique for Camera Calibration (PDF) (Technical report). Microsoft Research. MSR-TR-98-71.
